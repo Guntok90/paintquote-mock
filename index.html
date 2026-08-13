@@ -6,14 +6,14 @@
   <title>MOCK — SAMPLE SCHOOL indoor walk</title>
   <style>
     :root {
-      --bg: #0b0c0e;
-      --bg-elevated: #12141a;
-      --surface: #161920;
-      --fg: #f2f3f5;
-      --muted: #9aa0ab;
-      --subtle: #6b7280;
-      --border: #2a2e38;
-      --border-strong: #3a4050;
+      --bg: #1a1714;
+      --bg-elevated: #221e1a;
+      --surface: #2a2520;
+      --fg: #f4efe8;
+      --muted: #b0a69a;
+      --subtle: #8a8074;
+      --border: #3d362e;
+      --border-strong: #52483e;
       --accent: #5b8def;
       --accent-dim: #3d6bc4;
       --warn: #f0d48a;
@@ -43,11 +43,12 @@
     .banner .sub { display: block; margin-top: 2px; color: #d8c48a; font-weight: 500; font-size: 12px; }
     .main {
       flex: 1 1 auto; min-height: 0;
-      display: grid; grid-template-columns: 1fr minmax(320px, 400px);
+      display: grid; grid-template-columns: 1fr minmax(280px, 340px);
     }
     .viewport-wrap {
       position: relative; min-width: 0; min-height: 0;
-      background: radial-gradient(ellipse at 50% 42%, #1a1d26 0%, #0e1015 70%);
+      background:
+        radial-gradient(ellipse at 50% 38%, #3a342c 0%, #2a241c 42%, #1a1612 78%);
     }
     .stage {
       width: 100%; height: 100%; perspective: 780px; perspective-origin: 50% 42%;
@@ -66,15 +67,19 @@
       position: absolute; left: 0; top: 0; margin: 0; padding: 0;
       border: 2px solid transparent;
       transform-style: preserve-3d; backface-visibility: hidden;
-      font: 650 11px/1.2 "Segoe UI", sans-serif; color: #1a1d24;
-      cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);
+      font: 650 11px/1.2 "Segoe UI", sans-serif; color: #4a3f34;
+      cursor: pointer;
+      box-shadow:
+        inset 0 0 0 1px rgba(80, 60, 40, 0.08),
+        inset 0 18px 40px rgba(255, 248, 235, 0.22),
+        inset 0 -24px 36px rgba(60, 40, 20, 0.08);
       opacity: 1;
     }
     .ground-plane {
       position: absolute; left: 0; top: 0; margin: 0; padding: 0; border: 0;
       pointer-events: none; transform-style: preserve-3d; backface-visibility: hidden;
       background:
-        radial-gradient(ellipse at 48% 42%, #3a424c 0%, #232830 42%, #14181e 78%, #0c0e12 100%);
+        radial-gradient(ellipse at 48% 42%, #5a6a52 0%, #3e4a3a 38%, #2a3228 72%, #1a2018 100%);
       box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
       opacity: 0; visibility: hidden;
     }
@@ -86,42 +91,95 @@
       pointer-events: none;
     }
     .face.ceiling { transition: opacity 0.22s ease; backface-visibility: visible; }
-    .face.wall { background: #e8eaed; }
-    .face.tint-class { background: #efe6c8; }
-    .face.tint-lobby { background: #e8dcc8; }
-    .face.tint-corridor { background: #d5dae3; }
-    .face.tint-library { background: #d5e4d4; }
-    .face.tint-lab { background: #d4e0ec; }
-    .face.tint-wash { background: #d4e8e4; }
-    .face.tint-staff { background: #ecd9cc; }
-    .face.tint-office { background: #e0d6ea; }
-    .face.tint-gym { background: #e4d5b8; }
-    .face.ceiling { background: #f4f4f5; }
+    .face.wall {
+      background: linear-gradient(180deg, #f7f0e6 0%, #ebe2d4 48%, #dfd4c4 100%);
+    }
+    .face.tint-class {
+      background: linear-gradient(180deg, #f5ecd8 0%, #ebe0c8 50%, #e0d2b4 100%);
+    }
+    .face.tint-lobby {
+      background: linear-gradient(180deg, #f2e6d4 0%, #e8d8c4 50%, #dccab4 100%);
+    }
+    .face.tint-corridor {
+      background: linear-gradient(180deg, #ebe6de 0%, #ddd6cc 50%, #cfc6ba 100%);
+    }
+    .face.tint-library {
+      background: linear-gradient(180deg, #e4edd8 0%, #d6e2c8 50%, #c6d4b4 100%);
+    }
+    .face.tint-lab {
+      background: linear-gradient(180deg, #e0e8f0 0%, #d0dce8 50%, #becedc 100%);
+    }
+    .face.tint-wash {
+      background: linear-gradient(180deg, #ddeee8 0%, #cde2dc 50%, #bcd4cc 100%);
+    }
+    .face.tint-staff {
+      background: linear-gradient(180deg, #f0ddd0 0%, #e4cec0 50%, #d6bcae 100%);
+    }
+    .face.tint-office {
+      background: linear-gradient(180deg, #e8e0ec 0%, #dcd2e4 50%, #ccc0d6 100%);
+    }
+    .face.tint-gym {
+      background: linear-gradient(180deg, #eee2cc 0%, #e2d2b4 50%, #d4c29e 100%);
+    }
+    .face.ceiling {
+      background:
+        linear-gradient(160deg, #faf7f2 0%, #f0ebe3 55%, #e6e0d6 100%);
+      box-shadow:
+        inset 0 0 0 1px rgba(80, 60, 40, 0.06),
+        inset 0 0 48px rgba(255, 250, 240, 0.35);
+    }
     .face.floor {
       background:
-        linear-gradient(rgba(20,16,12,0.35), rgba(20,16,12,0.35)),
-        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0,0,0,0.2) 39px, rgba(0,0,0,0.2) 40px),
-        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,0,0,0.2) 39px, rgba(0,0,0,0.2) 40px),
-        #8b7355;
-      color: #f0d48a; cursor: pointer;
+        linear-gradient(180deg, rgba(90, 60, 30, 0.12), rgba(40, 28, 16, 0.18)),
+        repeating-linear-gradient(
+          90deg,
+          #c4a574 0px, #c4a574 38px,
+          #b89564 38px, #b89564 40px
+        );
+      color: #f5e6c8; cursor: pointer;
       display: grid; place-items: center; text-align: center;
+      box-shadow:
+        inset 0 0 0 1px rgba(60, 40, 20, 0.15),
+        inset 0 0 40px rgba(40, 28, 12, 0.18);
     }
     .model:not(.ceilings-open) .face.floor { cursor: not-allowed; }
-    .face.on { border-color: #5b8def; box-shadow: inset 0 0 0 2px rgba(91,141,239,0.4); }
-    .face.off { background: #3a4050 !important; color: #9aa0ab; }
-    .face.hover:not(.floor) { filter: brightness(1.08); }
-    .model.ceilings-open .face.dim { opacity: 0.22; }
-    .model.ceilings-open .face.floor { opacity: 0.55; }
-    .model.ceilings-open .face.floor.hover { filter: brightness(1.12); opacity: 0.72; }
-    /* Inside a room: hide other rooms so far walls cannot blow out through doorways */
+    .face.on { border-color: #5b8def; box-shadow: inset 0 0 0 2px rgba(91,141,239,0.45), inset 0 18px 40px rgba(255,248,235,0.18); }
+    .face.off {
+      background: linear-gradient(180deg, #5a544c 0%, #4a443c 100%) !important;
+      color: #b0a69a;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+    }
+    .face.hover:not(.floor) { filter: brightness(1.06); }
+    .model.ceilings-open .face.dim { opacity: 0.28; }
+    .model.ceilings-open .face.floor { opacity: 0.62; }
+    .model.ceilings-open .face.floor.hover { filter: brightness(1.1); opacity: 0.78; }
     .model.isolate-room .face.isolated {
       visibility: hidden;
       pointer-events: none;
     }
-    .face .lbl { pointer-events: none; padding: 6px; }
-    .opening { position: absolute; pointer-events: none; background: #0b1220; box-shadow: inset 0 0 0 2px #020617; }
-    .opening.window { background: #1a3358; }
-    .opening.door-wide { background: #1e293b; }
+    .face .lbl { pointer-events: none; padding: 6px; text-shadow: 0 1px 0 rgba(255,255,255,0.35); }
+    .opening {
+      position: absolute; pointer-events: none;
+      background:
+        linear-gradient(180deg, #3a4558 0%, #1e2838 100%);
+      box-shadow:
+        inset 0 0 0 3px #c8b8a0,
+        inset 0 0 0 5px #8a7a62,
+        inset 0 8px 16px rgba(255,255,255,0.08);
+      border-radius: 3px 3px 0 0;
+    }
+    .opening.window {
+      background:
+        linear-gradient(155deg, rgba(186, 214, 236, 0.92) 0%, rgba(110, 158, 196, 0.78) 45%, rgba(70, 118, 158, 0.82) 100%);
+      box-shadow:
+        inset 0 0 0 3px #d4c6b0,
+        inset 0 0 0 5px #a89880,
+        inset 0 0 18px rgba(255,255,255,0.28);
+      border-radius: 3px;
+    }
+    .opening.door-wide {
+      background: linear-gradient(180deg, #3e4a5c 0%, #222c3c 100%);
+    }
     .opening.door-nav,
     .opening.door-wide.door-nav {
       pointer-events: auto;
@@ -129,7 +187,7 @@
     }
     .hover-chip {
       position: absolute; top: 10px; left: 10px; pointer-events: none;
-      background: rgba(18,20,26,0.9); border: 1px solid var(--border);
+      background: rgba(34,30,26,0.92); border: 1px solid var(--border);
       border-radius: 8px; padding: 7px 9px; font-size: 12px; min-width: 180px; display: none; z-index: 2;
     }
     .hover-chip strong { display: block; font-size: 13px; }
@@ -144,7 +202,7 @@
     .mode-toggle {
       position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
       z-index: 4; display: flex; gap: 0;
-      background: rgba(18,20,26,0.92); border: 1px solid var(--border-strong);
+      background: rgba(34,30,26,0.92); border: 1px solid var(--border-strong);
       border-radius: 999px; padding: 3px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
     }
     .mode-btn {
@@ -157,57 +215,51 @@
       background: #1c2740; color: #c5d8ff;
       box-shadow: inset 0 0 0 1px var(--accent-dim);
     }
+    .where {
+      position: absolute; left: 12px; bottom: 14px; z-index: 4;
+      background: rgba(34,30,26,0.88); border: 1px solid var(--border);
+      border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--muted);
+      pointer-events: none;
+    }
+    .where strong { color: var(--fg); font-weight: 700; }
     .sidebar {
       background: var(--surface); border-left: 1px solid var(--border);
       display: flex; flex-direction: column; min-height: 0; min-width: 0;
     }
-    .side-head { flex: 0 0 auto; padding: 12px 14px 8px; border-bottom: 1px solid var(--border); }
-    .side-head h1 { margin: 0; font-size: 16px; font-weight: 700; }
+    .side-head { flex: 0 0 auto; padding: 14px 14px 10px; border-bottom: 1px solid var(--border); }
+    .side-head h1 { margin: 0; font-size: 15px; font-weight: 700; }
     .side-head .lede { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
     .total {
       flex: 0 0 auto; display: flex; align-items: baseline; justify-content: space-between;
-      gap: 10px; padding: 10px 14px; background: #121a28; border-bottom: 1px solid #2a4068;
+      gap: 10px; padding: 12px 14px; background: #1e2838; border-bottom: 1px solid #2a4068;
     }
     .total .k { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
-    .total .v { font-size: 26px; font-weight: 750; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+    .total .v { font-size: 28px; font-weight: 750; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
     .total .v span { font-size: 14px; color: var(--muted); font-weight: 600; margin-left: 4px; }
-    .dims { margin-top: 3px; color: var(--subtle); font-size: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-    .list { display: flex; flex-direction: column; gap: 6px; flex: 1 1 auto; overflow: auto; min-height: 0; padding: 8px 10px 10px; }
-    .room-block { border: 1px solid var(--border); border-radius: 10px; background: var(--bg-elevated); overflow: hidden; }
-    .room-block.open { border-color: var(--border-strong); }
-    .room-block.focused { border-color: var(--accent-dim); box-shadow: inset 0 0 0 1px var(--accent-dim); }
-    .room-h {
-      display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center;
-      width: 100%; padding: 7px 8px; border: 0; background: transparent; color: inherit;
-      font: inherit; cursor: pointer; text-align: left;
+    .sel-head {
+      flex: 0 0 auto; padding: 10px 14px 4px;
+      color: var(--subtle); font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.06em; font-weight: 700;
     }
-    .room-h .name { font-size: 12px; font-weight: 700; }
-    .room-h .detail { display: block; color: var(--muted); font-size: 10px; font-weight: 400; margin-top: 1px; }
-    .room-body { display: none; padding: 0 6px 6px; }
-    .room-block.open .room-body { display: block; }
-    .row {
-      display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center;
-      padding: 5px 8px; border: 1px solid var(--border); border-radius: 8px;
-      background: #0e1016; cursor: pointer; text-align: left; color: inherit; font: inherit; width: 100%;
-      margin-top: 4px;
+    .list { display: flex; flex-direction: column; gap: 4px; flex: 1 1 auto; overflow: auto; min-height: 0; padding: 4px 10px 10px; }
+    .empty {
+      margin: 8px 4px; padding: 14px 12px; border: 1px dashed var(--border);
+      border-radius: 10px; color: var(--muted); font-size: 12px; text-align: center; line-height: 1.45;
     }
-    .row:hover { border-color: var(--border-strong); }
-    .row.on { border-color: var(--accent-dim); box-shadow: inset 0 0 0 1px var(--accent-dim); }
-    .row.off { opacity: 0.72; }
-    .row.locked { cursor: not-allowed; opacity: 0.88; background: #1a1714; border-color: #3d3428; }
-    .row .name { font-size: 12px; font-weight: 650; }
-    .row .detail { display: block; color: var(--muted); font-size: 10px; font-weight: 400; margin-top: 1px; }
-    .pill { font-size: 9px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 6px; border-radius: 999px; }
-    .pill.yes { background: #1c3a2c; color: #7dcea0; }
-    .pill.no { background: #2a2e38; color: var(--muted); }
-    .pill.never { background: #3a2e1c; color: #e0b36a; }
-    .m2 { font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; min-width: 58px; text-align: right; }
-    .child { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 1px 10px 2px 18px; color: var(--muted); font-size: 10px; }
-    .child .m2 { font-size: 10px; color: var(--subtle); }
-    .note { margin: 0 12px 10px; color: var(--subtle); font-size: 10px; }
+    .sel-row {
+      display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center;
+      padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--bg-elevated); cursor: pointer; text-align: left; color: inherit; font: inherit; width: 100%;
+    }
+    .sel-row:hover { border-color: var(--border-strong); }
+    .sel-row .name { font-size: 12px; font-weight: 650; }
+    .sel-row .detail { display: block; color: var(--muted); font-size: 10px; font-weight: 400; margin-top: 1px; }
+    .m2 { font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color: var(--fg); }
+    .note { margin: 0 12px 12px; color: var(--subtle); font-size: 10px; }
     @media (max-width: 900px) {
       .main { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
-      .sidebar { border-left: 0; border-top: 1px solid var(--border); max-height: 46vh; }
+      .sidebar { border-left: 0; border-top: 1px solid var(--border); max-height: 40vh; }
+      .where { bottom: auto; top: 10px; left: 10px; }
     }
   </style>
 </head>
@@ -225,6 +277,7 @@
         <div class="stage" id="stage"><div class="scene"><div class="model" id="model"></div></div></div>
         <div class="hover-chip" id="hover"></div>
         <div class="toast" id="toast"></div>
+        <div class="where" id="where">Walk · <strong>Corridor</strong></div>
         <div class="mode-toggle" id="modeToggle" role="group" aria-label="Camera mode">
           <button type="button" class="mode-btn on" data-mode="walk" id="modeWalk">Walk</button>
           <button type="button" class="mode-btn" data-mode="roof-off" id="modeRoof">Roof-off</button>
@@ -232,18 +285,16 @@
       </div>
       <aside class="sidebar">
         <div class="side-head">
-          <h1>SAMPLE SCHOOL — indoor walk</h1>
-          <p class="lede">11 interior rooms. Click a room to stand inside it. Click a surface to include it in the m² total. Floors stay out. Sample dimensions — not a LiDAR capture.</p>
+          <h1>SAMPLE SCHOOL</h1>
+          <p class="lede">Click walls and ceilings to include. Floors stay out. Roof-off → click a room to walk inside.</p>
         </div>
         <div class="total">
-          <div>
-            <div class="k">Indoor paintable</div>
-            <div class="dims" id="dims"></div>
-          </div>
+          <div class="k">Selected total</div>
           <div class="v" id="total">0.00<span>m²</span></div>
         </div>
+        <div class="sel-head">Selected surfaces</div>
         <div class="list" id="list"></div>
-        <p class="note">Door / window area subtracts only while the parent wall is included. includeFloor: false on every room. Corridor and gym would be walked in ~5 m indoor segments.</p>
+        <p class="note">Floors never included · openings subtract while the wall is selected · no prices</p>
       </aside>
     </div>
   </div>
@@ -372,9 +423,6 @@
   function totalOf(list) {
     return r2(list.reduce(function (sum, s) { return sum + netOf(s); }, 0));
   }
-  function roomSurfaces(id) {
-    return surfaces.filter(function (s) { return s.roomId === id; });
-  }
   function roomById(id) {
     return rooms.find(function (r) { return r.id === id; });
   }
@@ -388,6 +436,7 @@
   const PX = 90;
   const INSET = 0.05;
   const EYE_H = 1.6;
+  const WALK_MARGIN = 0.4;
   const TWEEN_MS = 300;
 
   const model = document.getElementById("model");
@@ -396,12 +445,11 @@
   const totalEl = document.getElementById("total");
   const hoverEl = document.getElementById("hover");
   const toastEl = document.getElementById("toast");
-  const dimsEl = document.getElementById("dims");
+  const whereEl = document.getElementById("where");
   const modeWalkBtn = document.getElementById("modeWalk");
   const modeRoofBtn = document.getElementById("modeRoof");
   const faces = {};
   let focusedId = "corridor";
-  let openRoomId = "corridor";
   let toastTimer = 0;
   let tween = null;
   let tweenRaf = 0;
@@ -460,7 +508,6 @@
       "<span class=\"lbl\">FLOOR<br>never included</span>");
   });
 
-  /* Roof-off ground under the school — not a toy floating in a void */
   (function addGroundPlane() {
     const padM = 22;
     const gW = (maxX - minX + padM * 2) * PX;
@@ -470,7 +517,6 @@
     ground.setAttribute("aria-hidden", "true");
     ground.style.width = gW + "px";
     ground.style.height = gD + "px";
-    /* Floor plane is y≈0; sit just under room floors */
     ground.style.transform =
       "translate(-50%, -50%) translate3d(0px, 4px, 0px) rotateX(-90deg)";
     model.appendChild(ground);
@@ -496,7 +542,7 @@
 
   /*
    * Two named modes — not analog cam.pull.
-   * Walk: eye-height insidePose, isolation on, look-drag.
+   * Walk: eye-height insidePose, isolation on, look-drag, stay inside room.
    * Roof-off: CUT to planFitZoom, ceilings lifted, orbit/pan.
    */
   const cam = {
@@ -534,7 +580,6 @@
       classB: { xM: 19.5, zM: 1.3, yaw: 130, pitch: -8 },
       office: { xM: 27.0, zM: 1.3, yaw: 130, pitch: -8 },
       wash: { xM: 33.2, zM: 2.6, yaw: 125, pitch: -8 },
-      /* Mid-volume — not pressed against the west wall */
       gym: { xM: 5.5, zM: 14.8, yaw: 55, pitch: -8 },
       library: { xM: 13.3, zM: 14.6, yaw: -55, pitch: -8 },
       lab: { xM: 21.3, zM: 13.6, yaw: -55, pitch: -8 },
@@ -558,7 +603,22 @@
     };
   }
 
-  /* zoomExtents-style: fit the plan, but never near-clip and never shrink to nothing */
+  /* Keep Walk eye inside the current room volume — no sliding out through walls/floors. */
+  function clampWalkInsideRoom() {
+    const room = roomById(cam.roomId) || roomById("corridor");
+    if (!room) return;
+    const margin = Math.min(WALK_MARGIN, room.w * 0.35, room.d * 0.35);
+    const base = insidePose(room, false);
+    const loX = worldX(room.x + margin);
+    const hiX = worldX(room.x + room.w - margin);
+    const loZ = worldZ(room.z + margin);
+    const hiZ = worldZ(room.z + room.d - margin);
+    const eyeX = clamp(base.x + cam.eyeXOff, Math.min(loX, hiX), Math.max(loX, hiX));
+    const eyeZ = clamp(base.z + cam.eyeZOff, Math.min(loZ, hiZ), Math.max(loZ, hiZ));
+    cam.eyeXOff = eyeX - base.x;
+    cam.eyeZOff = eyeZ - base.z;
+  }
+
   function planFitZoom() {
     const rect = stage.getBoundingClientRect();
     const viewW = Math.max(rect.width, 320);
@@ -603,6 +663,12 @@
   function syncModeChrome() {
     modeWalkBtn.classList.toggle("on", cam.mode === "walk");
     modeRoofBtn.classList.toggle("on", cam.mode === "roof-off");
+    const room = roomById(cam.roomId);
+    if (cam.mode === "roof-off") {
+      whereEl.innerHTML = "Roof-off · <strong>plan</strong>";
+    } else {
+      whereEl.innerHTML = "Walk · <strong>" + ((room && room.name) || "Room") + "</strong>";
+    }
   }
 
   function paintFaces() {
@@ -619,14 +685,15 @@
   }
 
   function currentWalkPose() {
+    clampWalkInsideRoom();
     const room = roomById(cam.roomId) || roomById("corridor");
     const base = insidePose(room, true);
     return {
       x: base.x,
-      y: base.y,
+      y: Math.min(base.y, -EYE_H * PX),
       z: base.z,
       yaw: base.yaw + cam.yawOff,
-      pitch: clamp(base.pitch + cam.pitchOff, -25, 40)
+      pitch: clamp(base.pitch + cam.pitchOff, -22, 28)
     };
   }
 
@@ -641,7 +708,6 @@
     const zoom = planFitZoom();
     const pitch = cam.orbitPitch;
     const yaw = cam.orbitYaw;
-    /* Push scales with zoom so large PX geometry stays behind the near plane */
     const push = clamp(240 + zoom * 280, 260, 360);
     model.style.transform =
       "translate(" + cam.panX + "px," + (24 + cam.panY * 0.02) + "px) rotateX(" +
@@ -686,7 +752,7 @@
       cam.eyeXOff = 0;
       cam.eyeZOff = 0;
       focusedId = tween.toId;
-      openRoomId = tween.toId;
+      clampWalkInsideRoom();
       tween = null;
       tweenRaf = 0;
       applyCamera();
@@ -715,13 +781,12 @@
       cam.panX = 0;
       cam.panY = 0;
       focusedId = id;
-      openRoomId = id;
+      clampWalkInsideRoom();
       applyCamera();
       render();
       return;
     }
 
-    /* Stay in Walk: ~300ms tween to that room's insidePose */
     const from = currentWalkPose();
     cam.yawOff = 0;
     cam.pitchOff = 0;
@@ -737,7 +802,6 @@
     };
     cancelTween();
     focusedId = id;
-    openRoomId = id;
     tween = { start: performance.now(), dur: TWEEN_MS, from: from, to: to, toId: id };
     applyCamera();
     render();
@@ -752,7 +816,6 @@
     cam.panY = 0;
     cam.orbitYaw = 26;
     cam.orbitPitch = 52;
-    /* CUT — no interpolation through clip space */
     applyCamera();
     render();
   }
@@ -762,63 +825,32 @@
     else enterWalkRoom(cam.roomId || "corridor", { cut: true });
   }
 
-  function focusRoom(id) {
-    if (!id) return;
-    enterWalkRoom(id);
-  }
-
   function render() {
     listEl.innerHTML = "";
-    rooms.forEach(function (room) {
-      const rs = roomSurfaces(room.id);
-      const t = totalOf(rs);
-      const block = el("div", "room-block" + (openRoomId === room.id ? " open" : "") + (focusedId === room.id ? " focused" : ""));
-      const head = el("button", "room-h");
-      head.type = "button";
-      const left = el("span");
-      left.appendChild(el("span", "name", room.name));
-      left.appendChild(el("span", "detail", fmt(room.w) + " \u00d7 " + fmt(room.d) + " \u00d7 " + fmt(room.h) + " m \u00b7 " + room.note));
-      head.appendChild(left);
-      head.appendChild(el("span", "pill yes", "room"));
-      head.appendChild(el("span", "m2", fmt(t)));
-      head.addEventListener("click", function () {
-        openRoomId = room.id;
-        focusRoom(room.id);
-      });
-      block.appendChild(head);
-      const body = el("div", "room-body");
-      rs.forEach(function (s) {
-        const btn = el("button", "row " + (s.selectable ? (s.included ? "on" : "off") : "locked"));
+    const selected = surfaces.filter(function (s) { return s.selectable && s.included; });
+    if (!selected.length) {
+      listEl.appendChild(el("div", "empty", "Nothing selected. Click a wall or ceiling in the view to add it."));
+    } else {
+      selected.forEach(function (s) {
+        const btn = el("button", "sel-row");
         btn.type = "button";
-        const l = el("span");
-        l.appendChild(el("span", "name", s.label.replace(room.name + " \u2014 ", "")));
-        var detail;
-        if (!s.selectable) detail = (s.lockReason || "not selectable") + " \u00b7 " + fmt(s.gross) + " m\u00b2 ignored";
-        else if (s.opening) detail = fmt(s.length) + " \u00d7 " + fmt(s.height) + " = " + fmt(s.gross) + " \u2212 " + fmt(s.opening) + " opening";
-        else detail = fmt(s.length) + " \u00d7 " + fmt(s.height) + " = " + fmt(s.gross);
-        l.appendChild(el("span", "detail", detail));
-        btn.appendChild(l);
-        if (!s.selectable) btn.appendChild(el("span", "pill never", "never"));
-        else btn.appendChild(el("span", "pill " + (s.included ? "yes" : "no"), s.included ? "included" : "excluded"));
-        btn.appendChild(el("span", "m2", s.selectable ? fmt(netOf(s)) : "\u2014"));
+        const left = el("span");
+        left.appendChild(el("span", "name", s.label));
+        var detail = fmt(netOf(s)) + " m\u00b2";
+        if (s.opening) detail += " (openings subtracted)";
+        left.appendChild(el("span", "detail", detail));
+        btn.appendChild(left);
+        btn.appendChild(el("span", "m2", fmt(netOf(s))));
+        btn.title = "Click to exclude";
         btn.addEventListener("click", function () { toggle(s.id); });
-        body.appendChild(btn);
-        if (s.openingLabel) {
-          const child = el("div", "child");
-          child.appendChild(el("span", null, "\u2212 " + s.openingLabel + " (subtracts if wall included)"));
-          child.appendChild(el("span", "m2", "\u2212" + fmt(s.opening)));
-          body.appendChild(child);
-        }
+        listEl.appendChild(btn);
       });
-      block.appendChild(body);
-      listEl.appendChild(block);
-    });
+    }
 
     const grand = totalOf(surfaces);
     totalEl.innerHTML = "";
     totalEl.appendChild(document.createTextNode(fmt(grand)));
     totalEl.appendChild(el("span", null, "m\u00b2"));
-    dimsEl.textContent = rooms.length + " indoor rooms \u00b7 walls + ceilings \u2212 openings \u00b7 floors out";
     paintFaces();
     syncModeChrome();
   }
@@ -835,7 +867,6 @@
       return;
     }
     s.included = !s.included;
-    openRoomId = s.roomId;
     render();
   }
 
@@ -890,9 +921,10 @@
       const rad = (insidePose(roomById(cam.roomId) || rooms[0], false).yaw + cam.yawOff) * Math.PI / 180;
       cam.eyeXOff += (Math.cos(rad) * dx + Math.sin(rad) * dy) * 0.7;
       cam.eyeZOff += (Math.sin(rad) * dx - Math.cos(rad) * dy) * 0.7;
+      clampWalkInsideRoom();
     } else {
       cam.yawOff += dx * 0.32;
-      cam.pitchOff = clamp(cam.pitchOff - dy * 0.26, -18, 32);
+      cam.pitchOff = clamp(cam.pitchOff - dy * 0.26, -18, 28);
     }
     applyCamera();
   });
@@ -935,9 +967,9 @@
   }, { passive: false });
 
   focusedId = "corridor";
-  openRoomId = "corridor";
   cam.roomId = "corridor";
   cam.mode = "walk";
+  clampWalkInsideRoom();
   applyCamera();
   render();
   window.addEventListener("resize", function () {
