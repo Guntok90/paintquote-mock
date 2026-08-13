@@ -70,6 +70,17 @@
       cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);
       opacity: 1;
     }
+    .ground-plane {
+      position: absolute; left: 0; top: 0; margin: 0; padding: 0; border: 0;
+      pointer-events: none; transform-style: preserve-3d; backface-visibility: hidden;
+      background:
+        radial-gradient(ellipse at 48% 42%, #3a424c 0%, #232830 42%, #14181e 78%, #0c0e12 100%);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+      opacity: 0; visibility: hidden;
+    }
+    .model.ceilings-open .ground-plane {
+      opacity: 1; visibility: visible;
+    }
     .model.ceilings-open .face.ceiling {
       opacity: 0 !important;
       pointer-events: none;
@@ -449,6 +460,22 @@
       "<span class=\"lbl\">FLOOR<br>never included</span>");
   });
 
+  /* Roof-off ground under the school — not a toy floating in a void */
+  (function addGroundPlane() {
+    const padM = 22;
+    const gW = (maxX - minX + padM * 2) * PX;
+    const gD = (maxZ - minZ + padM * 2) * PX;
+    const ground = document.createElement("div");
+    ground.className = "ground-plane";
+    ground.setAttribute("aria-hidden", "true");
+    ground.style.width = gW + "px";
+    ground.style.height = gD + "px";
+    /* Floor plane is y≈0; sit just under room floors */
+    ground.style.transform =
+      "translate(-50%, -50%) translate3d(0px, 4px, 0px) rotateX(-90deg)";
+    model.appendChild(ground);
+  })();
+
   Object.keys(openings).forEach(function (id) {
     (faces[id] || []).forEach(function (parent) {
       const mirror = parent.dataset.mirrorOpenings === "1";
@@ -507,7 +534,8 @@
       classB: { xM: 19.5, zM: 1.3, yaw: 130, pitch: -8 },
       office: { xM: 27.0, zM: 1.3, yaw: 130, pitch: -8 },
       wash: { xM: 33.2, zM: 2.6, yaw: 125, pitch: -8 },
-      gym: { xM: 1.8, zM: 13.0, yaw: 78, pitch: -6 },
+      /* Mid-volume — not pressed against the west wall */
+      gym: { xM: 5.5, zM: 14.8, yaw: 55, pitch: -8 },
       library: { xM: 13.3, zM: 14.6, yaw: -55, pitch: -8 },
       lab: { xM: 21.3, zM: 13.6, yaw: -55, pitch: -8 },
       classC: { xM: 29.6, zM: 12.8, yaw: -55, pitch: -8 },
@@ -530,13 +558,24 @@
     };
   }
 
+  /* zoomExtents-style: fit the plan, but never near-clip and never shrink to nothing */
   function planFitZoom() {
     const rect = stage.getBoundingClientRect();
     const viewW = Math.max(rect.width, 320);
     const viewH = Math.max(rect.height, 240);
-    const fitW = (maxX - minX) * PX * 1.12;
-    const fitH = (maxZ - minZ) * PX * 1.35;
-    return clamp(Math.min(viewW / fitW, viewH / fitH) * 0.95, 0.08, 0.45);
+    const fitW = (maxX - minX) * PX * 1.18;
+    const fitH = (maxZ - minZ) * PX * 1.45;
+    const fit = Math.min(viewW / fitW, viewH / fitH) * 0.92;
+    const minZoom = Math.max(0.11, fit * 0.62);
+    const maxZoom = Math.min(0.30, fit * 1.08);
+    return clamp(fit, minZoom, maxZoom);
+  }
+
+  function clampRoofPan() {
+    const z = planFitZoom();
+    const span = Math.max(maxX - minX, maxZ - minZ) * PX * z * 0.6;
+    cam.panX = clamp(cam.panX, -span, span);
+    cam.panY = clamp(cam.panY, -span, span);
   }
 
   function roomLift(ceilId) {
@@ -598,10 +637,12 @@
   }
 
   function applyRoofTransform() {
+    clampRoofPan();
     const zoom = planFitZoom();
     const pitch = cam.orbitPitch;
     const yaw = cam.orbitYaw;
-    const push = 280;
+    /* Push scales with zoom so large PX geometry stays behind the near plane */
+    const push = clamp(240 + zoom * 280, 260, 360);
     model.style.transform =
       "translate(" + cam.panX + "px," + (24 + cam.panY * 0.02) + "px) rotateX(" +
       pitch + "deg) rotateY(" + yaw + "deg) translateZ(" + (-push) + "px) scale(" + zoom + ")";
