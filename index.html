@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MOCK — PaintQuote click-to-select</title>
+  <title>MOCK — SAMPLE SCHOOL indoor walk</title>
   <style>
     :root {
       --bg: #0b0c0e;
@@ -16,6 +16,7 @@
       --border-strong: #3a4050;
       --accent: #5b8def;
       --accent-dim: #3d6bc4;
+      --warn: #f0d48a;
       --radius: 12px;
     }
     * { box-sizing: border-box; }
@@ -24,112 +25,151 @@
       background: var(--bg);
       color: var(--fg);
       font-family: "Segoe UI", ui-sans-serif, system-ui, -apple-system, sans-serif;
-      line-height: 1.45;
+      line-height: 1.4;
       -webkit-font-smoothing: antialiased;
     }
+    .app { display: flex; flex-direction: column; height: 100%; min-height: 0; }
     .banner {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 16px; background: #2a2110; border-bottom: 1px solid #5a4a22;
-      color: #f0d48a; font-size: 13px; font-weight: 600;
+      flex: 0 0 auto;
+      display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap;
+      padding: 8px 14px; background: #2a2110; border-bottom: 1px solid #5a4a22;
+      color: var(--warn); font-size: 13px; font-weight: 600;
     }
     .banner-tag {
       background: #c4922a; color: #1a1408; font-size: 11px; font-weight: 800;
-      letter-spacing: 0.08em; padding: 2px 7px; border-radius: 4px;
+      letter-spacing: 0.08em; padding: 2px 7px; border-radius: 4px; margin-top: 1px;
     }
-    .app { display: flex; height: 100%; flex-direction: column; }
+    .banner p { margin: 0; max-width: 110ch; font-weight: 600; }
+    .banner .sub { display: block; margin-top: 2px; color: #d8c48a; font-weight: 500; font-size: 12px; }
     .main {
-      flex: 1 1 auto; display: grid;
-      grid-template-columns: 1fr minmax(300px, 380px); min-height: 0;
+      flex: 1 1 auto; min-height: 0;
+      display: grid; grid-template-columns: 1fr minmax(320px, 400px);
     }
-    .viewport-wrap { position: relative; min-width: 0; min-height: 0; background: #0e1015; }
+    .viewport-wrap {
+      position: relative; min-width: 0; min-height: 0;
+      background: radial-gradient(ellipse at 50% 42%, #1a1d26 0%, #0e1015 70%);
+    }
+    .vision {
+      position: absolute; top: 10px; right: 10px; max-width: 360px; z-index: 2;
+      color: var(--warn); font-size: 11px; font-weight: 600; line-height: 1.35;
+      background: rgba(36,28,16,0.92); border: 1px solid #5a4a22; border-radius: 8px; padding: 7px 9px;
+      pointer-events: none;
+    }
     .stage {
-      width: 100%; height: 100%; perspective: 900px; overflow: hidden;
+      width: 100%; height: 100%; perspective: 1400px; overflow: hidden;
       touch-action: none; cursor: grab; user-select: none;
     }
     .stage:active { cursor: grabbing; }
-    .scene {
-      width: 100%; height: 100%; display: grid; place-items: center;
-      transform-style: preserve-3d;
-    }
-    .room {
-      position: relative; width: 400px; height: 208px;
-      transform-style: preserve-3d; transform-origin: center center;
-    }
+    .scene { width: 100%; height: 100%; display: grid; place-items: center; transform-style: preserve-3d; }
+    .model { position: relative; width: 0; height: 0; transform-style: preserve-3d; transform-origin: center center; }
     .face {
-      position: absolute; margin: 0; padding: 0; border: 2px solid transparent;
+      position: absolute; left: 0; top: 0; margin: 0; padding: 0;
+      border: 2px solid transparent;
       transform-style: preserve-3d; backface-visibility: hidden;
-      font: 600 12px/1.2 "Segoe UI", sans-serif; color: #1a1d24;
-      cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+      font: 650 11px/1.2 "Segoe UI", sans-serif; color: #1a1d24;
+      cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
     }
     .face.wall { background: #e8eaed; }
+    .face.tint-class { background: #efe6c8; }
+    .face.tint-lobby { background: #e8dcc8; }
+    .face.tint-corridor { background: #d5dae3; }
+    .face.tint-library { background: #d5e4d4; }
+    .face.tint-lab { background: #d4e0ec; }
+    .face.tint-wash { background: #d4e8e4; }
+    .face.tint-staff { background: #ecd9cc; }
+    .face.tint-office { background: #e0d6ea; }
+    .face.tint-gym { background: #e4d5b8; }
     .face.ceiling { background: #f4f4f5; }
     .face.floor {
       background:
         linear-gradient(rgba(20,16,12,0.35), rgba(20,16,12,0.35)),
-        repeating-linear-gradient(0deg, transparent, transparent 79px, rgba(0,0,0,0.2) 79px, rgba(0,0,0,0.2) 80px),
-        repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(0,0,0,0.2) 79px, rgba(0,0,0,0.2) 80px),
+        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0,0,0,0.2) 39px, rgba(0,0,0,0.2) 40px),
+        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,0,0,0.2) 39px, rgba(0,0,0,0.2) 40px),
         #8b7355;
       color: #f0d48a; cursor: not-allowed;
       display: grid; place-items: center; text-align: center;
     }
-    .face.on { border-color: #5b8def; box-shadow: inset 0 0 0 2px rgba(91,141,239,0.35); }
-    .face.off { background: #3a4050; color: #9aa0ab; }
+    .face.on { border-color: #5b8def; box-shadow: inset 0 0 0 2px rgba(91,141,239,0.4); }
+    .face.off { background: #3a4050 !important; color: #9aa0ab; }
     .face.hover:not(.floor) { filter: brightness(1.08); }
-    .face .lbl { pointer-events: none; }
-    .opening {
-      position: absolute; background: #1e293b; pointer-events: none;
-      box-shadow: inset 0 0 0 2px #0f172a;
-    }
+    .face.dim { opacity: 0.16; }
+    .face .lbl { pointer-events: none; padding: 6px; }
+    .opening { position: absolute; pointer-events: none; background: #1e293b; box-shadow: inset 0 0 0 2px #0f172a; }
     .opening.window { background: #1a3358; }
-    .hint { position: absolute; left: 14px; bottom: 14px; right: 14px; pointer-events: none; color: var(--muted); font-size: 12px; }
+    .opening.door-wide { background: #1e293b; }
+    .hint { position: absolute; left: 12px; bottom: 10px; right: 12px; pointer-events: none; color: var(--muted); font-size: 11px; font-weight: 600; }
     .hover-chip {
-      position: absolute; top: 14px; left: 14px; pointer-events: none;
-      background: rgba(18,20,26,0.88); border: 1px solid var(--border);
-      border-radius: 8px; padding: 8px 10px; font-size: 12px; min-width: 180px; display: none;
+      position: absolute; top: 10px; left: 10px; pointer-events: none;
+      background: rgba(18,20,26,0.9); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 9px; font-size: 12px; min-width: 180px; display: none; z-index: 2;
     }
     .hover-chip strong { display: block; font-size: 13px; }
     .hover-chip .sub { color: var(--muted); margin-top: 2px; }
     .toast {
-      position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
-      background: #2a2110; border: 1px solid #5a4a22; color: #f0d48a;
-      font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: 8px;
-      opacity: 0; pointer-events: none; transition: opacity 0.2s ease; white-space: nowrap;
+      position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+      background: #2a2110; border: 1px solid #5a4a22; color: var(--warn);
+      font-size: 12px; font-weight: 600; padding: 7px 11px; border-radius: 8px;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s ease; white-space: nowrap; z-index: 3;
     }
     .toast.show { opacity: 1; }
-    .sidebar { background: var(--surface); border-left: 1px solid var(--border); overflow: hidden; padding: 16px 16px 18px; display: flex; flex-direction: column; min-height: 0; }
-    h1 { margin: 0 0 4px; font-size: 16px; font-weight: 650; }
-    .lede { margin: 0 0 14px; color: var(--muted); font-size: 12px; }
-    .dims { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 14px; font-size: 12px; }
-    .dims .k { color: var(--subtle); text-transform: uppercase; letter-spacing: 0.06em; font-size: 10px; font-weight: 700; margin-bottom: 4px; }
-    .dims code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-    .math { margin: 8px 0 0; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; line-height: 1.55; }
-    .list { display: flex; flex-direction: column; gap: 6px; flex: 1 1 auto; overflow: auto; min-height: 0; }
+    .sidebar {
+      background: var(--surface); border-left: 1px solid var(--border);
+      display: flex; flex-direction: column; min-height: 0; min-width: 0;
+    }
+    .side-head { flex: 0 0 auto; padding: 12px 14px 8px; border-bottom: 1px solid var(--border); }
+    .side-head h1 { margin: 0; font-size: 16px; font-weight: 700; }
+    .side-head .lede { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .walk { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 5px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+    .chip {
+      border: 1px solid var(--border); background: var(--bg-elevated); color: inherit;
+      font: 650 10px/1 "Segoe UI", sans-serif; padding: 5px 7px; border-radius: 999px; cursor: pointer;
+    }
+    .chip:hover { border-color: var(--border-strong); }
+    .chip.on { border-color: var(--accent-dim); box-shadow: inset 0 0 0 1px var(--accent-dim); color: #c5d8ff; }
+    .total {
+      flex: 0 0 auto; display: flex; align-items: baseline; justify-content: space-between;
+      gap: 10px; padding: 10px 14px; background: #121a28; border-bottom: 1px solid #2a4068;
+    }
+    .total .k { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
+    .total .v { font-size: 26px; font-weight: 750; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+    .total .v span { font-size: 14px; color: var(--muted); font-weight: 600; margin-left: 4px; }
+    .dims { margin-top: 3px; color: var(--subtle); font-size: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .list { display: flex; flex-direction: column; gap: 6px; flex: 1 1 auto; overflow: auto; min-height: 0; padding: 8px 10px 10px; }
+    .room-block { border: 1px solid var(--border); border-radius: 10px; background: var(--bg-elevated); overflow: hidden; }
+    .room-block.open { border-color: var(--border-strong); }
+    .room-block.focused { border-color: var(--accent-dim); box-shadow: inset 0 0 0 1px var(--accent-dim); }
+    .room-h {
+      display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center;
+      width: 100%; padding: 7px 8px; border: 0; background: transparent; color: inherit;
+      font: inherit; cursor: pointer; text-align: left;
+    }
+    .room-h .name { font-size: 12px; font-weight: 700; }
+    .room-h .detail { display: block; color: var(--muted); font-size: 10px; font-weight: 400; margin-top: 1px; }
+    .room-body { display: none; padding: 0 6px 6px; }
+    .room-block.open .room-body { display: block; }
     .row {
       display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center;
-      padding: 7px 10px; border: 1px solid var(--border); border-radius: 10px;
-      background: var(--bg-elevated); cursor: pointer; text-align: left; color: inherit; font: inherit; width: 100%;
+      padding: 5px 8px; border: 1px solid var(--border); border-radius: 8px;
+      background: #0e1016; cursor: pointer; text-align: left; color: inherit; font: inherit; width: 100%;
+      margin-top: 4px;
     }
     .row:hover { border-color: var(--border-strong); }
     .row.on { border-color: var(--accent-dim); box-shadow: inset 0 0 0 1px var(--accent-dim); }
     .row.off { opacity: 0.72; }
-    .row.locked { cursor: not-allowed; opacity: 0.85; background: #1a1714; border-color: #3d3428; }
-    .row .name { font-size: 13px; font-weight: 600; }
-    .row .detail { display: block; color: var(--muted); font-size: 11px; font-weight: 400; margin-top: 1px; }
-    .pill { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 7px; border-radius: 999px; }
+    .row.locked { cursor: not-allowed; opacity: 0.88; background: #1a1714; border-color: #3d3428; }
+    .row .name { font-size: 12px; font-weight: 650; }
+    .row .detail { display: block; color: var(--muted); font-size: 10px; font-weight: 400; margin-top: 1px; }
+    .pill { font-size: 9px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 6px; border-radius: 999px; }
     .pill.yes { background: #1c3a2c; color: #7dcea0; }
     .pill.no { background: #2a2e38; color: var(--muted); }
     .pill.never { background: #3a2e1c; color: #e0b36a; }
-    .m2 { font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; min-width: 64px; text-align: right; }
-    .child { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 4px 12px 2px 22px; color: var(--muted); font-size: 11px; }
-    .child .m2 { font-size: 11px; color: var(--subtle); }
-    .total { margin-top: 12px; padding: 12px; border-radius: var(--radius); background: #121a28; border: 1px solid #2a4068; flex: 0 0 auto; }
-    .total .k { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
-    .total .v { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; margin-top: 2px; }
-    .total .v span { font-size: 16px; color: var(--muted); font-weight: 600; margin-left: 4px; }
-    .note { margin-top: 12px; color: var(--subtle); font-size: 11px; }
-    @media (max-width: 820px) {
-      .main { grid-template-columns: 1fr; grid-template-rows: minmax(280px, 1fr) auto; }
-      .sidebar { border-left: 0; border-top: 1px solid var(--border); max-height: 48vh; }
+    .m2 { font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; min-width: 58px; text-align: right; }
+    .child { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 1px 10px 2px 18px; color: var(--muted); font-size: 10px; }
+    .child .m2 { font-size: 10px; color: var(--subtle); }
+    .note { margin: 0 12px 10px; color: var(--subtle); font-size: 10px; }
+    @media (max-width: 900px) {
+      .main { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+      .sidebar { border-left: 0; border-top: 1px solid var(--border); max-height: 46vh; }
     }
   </style>
 </head>
@@ -137,256 +177,445 @@
   <div class="app">
     <div class="banner">
       <span class="banner-tag">MOCK</span>
-      <span>MOCK — not live PaintQuote. Click a surface to add it to the calculation.</span>
+      <p>
+        MOCK — SAMPLE SCHOOL. One indoor building, walked room-by-room.
+        <span class="sub">Honest RoomPlan: indoor only, LiDAR ~5 m per capture. Large rooms (gym, corridor) are overlapping indoor segments — not an outdoor envelope. Click walls and ceilings. Floors never included. No prices.</span>
+      </p>
     </div>
     <div class="main">
       <div class="viewport-wrap">
-        <div class="stage" id="stage"><div class="scene" id="scene"><div class="room" id="room"></div></div></div>
-        <div class="hover-chip" id="hoverChip"></div>
-        <div class="toast" id="toast">Floor never included</div>
-        <div class="hint">Drag to orbit · scroll to zoom · right-drag to pan · click a wall or ceiling to include / exclude</div>
+        <div class="vision">Proposed UX / vision — not a live scan. Real iPhone RoomPlan is indoor, room-by-room (LiDAR ~5 m). It cannot measure a school from outside. Product stays inside: classrooms, library, lab, lobby, corridor, washrooms, staff, office, gym.</div>
+        <div class="stage" id="stage"><div class="scene"><div class="model" id="model"></div></div></div>
+        <div class="hover-chip" id="hover"></div>
+        <div class="toast" id="toast"></div>
+        <div class="hint">Drag to orbit · scroll to zoom · right-drag to pan · click a wall or ceiling to include / exclude · chips focus a room</div>
       </div>
       <aside class="sidebar">
-        <h1>Paintable surfaces</h1>
-        <p class="lede">Proposed click-to-select UX. Live PaintQuote orbits the room but include / exclude is a form. Floors are never in the total. No prices.</p>
-        <div class="dims">
-          <div class="k">Sample dimensions — not a LiDAR capture</div>
-          <div>Rectangular room <code>5.0 × 4.0 × 2.6 m</code></div>
-          <div class="math" id="math"></div>
+        <div class="side-head">
+          <h1>SAMPLE SCHOOL — indoor walk</h1>
+          <p class="lede">11 interior rooms. Click a surface to include it in the m² total. Floors stay out. Sample dimensions — not a LiDAR capture.</p>
         </div>
-        <div class="list" id="list"></div>
+        <div class="walk" id="walk"></div>
         <div class="total">
-          <div class="k">Total paintable</div>
+          <div>
+            <div class="k">Indoor paintable</div>
+            <div class="dims" id="dims"></div>
+          </div>
           <div class="v" id="total">0.00<span>m²</span></div>
         </div>
-        <p class="note">Door and window are openings. Their area subtracts only while the parent wall is included. Product is LiDAR surface-area only.</p>
+        <div class="list" id="list"></div>
+        <p class="note">Door / window area subtracts only while the parent wall is included. includeFloor: false on every room. Corridor and gym would be walked in ~5 m indoor segments.</p>
       </aside>
     </div>
   </div>
-
   <script>
-const W = 5.0;
-const D = 4.0;
-const H = 2.6;
-const DOOR = { w: 0.9, h: 2.1, label: "Door" };
-const WIN = { w: 1.4, h: 1.2, label: "Window" };
-const r2 = (n) => Math.round(n * 100) / 100;
-const fmt = (n) => r2(n).toFixed(2);
+(function () {
+  const r2 = function (n) { return Math.round(n * 100) / 100; };
+  const fmt = function (n) { return r2(n).toFixed(2); };
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function openingArea(list) {
+    return (list || []).reduce(function (s, o) { return s + o.w * o.h; }, 0);
+  }
+  function openingLabel(list) {
+    if (!list || !list.length) return null;
+    return list.map(function (o) {
+      return o.label || (o.kind + " " + fmt(o.w) + " \u00d7 " + fmt(o.h));
+    }).join(", ");
+  }
 
-const surfaces = [
-  { id: "front", kind: "wall", label: "Front wall", selectable: true, included: true, length: W, height: H, gross: W * H, opening: DOOR.w * DOOR.h, openingLabel: "Door 0.9 × 2.1" },
-  { id: "right", kind: "wall", label: "Right wall", selectable: true, included: true, length: D, height: H, gross: D * H, opening: WIN.w * WIN.h, openingLabel: "Window 1.4 × 1.2" },
-  { id: "back", kind: "wall", label: "Back wall", selectable: true, included: true, length: W, height: H, gross: W * H, opening: 0, openingLabel: null },
-  { id: "left", kind: "wall", label: "Left wall", selectable: true, included: true, length: D, height: H, gross: D * H, opening: 0, openingLabel: null },
-  { id: "ceiling", kind: "ceiling", label: "Ceiling", selectable: true, included: true, length: W, height: D, gross: W * D, opening: 0, openingLabel: null },
-  { id: "floor", kind: "floor", label: "Floor", selectable: false, included: false, length: W, height: D, gross: W * D, opening: 0, openingLabel: null },
-];
-function netOf(s) {
-  if (!s.selectable || !s.included) return 0;
-  return Math.max(0, s.gross - s.opening);
-}
-function totalPaintable() {
-  return r2(surfaces.reduce((sum, s) => sum + netOf(s), 0));
-}
+  const rooms = [
+    { id: "lobby", name: "Lobby", x: 10, z: 0, w: 8, d: 6, h: 3.2, tint: "lobby", note: "main indoor entry" },
+    { id: "classA", name: "Classroom A", x: 0, z: 0, w: 10, d: 6, h: 3.0, tint: "class", note: "south wing" },
+    { id: "classB", name: "Classroom B", x: 18, z: 0, w: 8, d: 6, h: 3.0, tint: "class", note: "south wing" },
+    { id: "office", name: "Office", x: 26, z: 0, w: 6, d: 6, h: 2.8, tint: "office", note: "admin" },
+    { id: "wash", name: "Washrooms", x: 32, z: 2, w: 5, d: 4, h: 2.8, tint: "wash", note: "south-east" },
+    { id: "corridor", name: "Corridor", x: 0, z: 6, w: 37, d: 3, h: 3.0, tint: "corridor", note: "walked in overlapping indoor segments \u00b7 LiDAR ~5 m" },
+    { id: "gym", name: "Gym", x: 0, z: 9, w: 12, d: 10, h: 6.0, tint: "gym", note: "tall hall \u00b7 walked in indoor segments \u00b7 LiDAR ~5 m" },
+    { id: "library", name: "Library", x: 12, z: 9, w: 8, d: 8, h: 3.2, tint: "library", note: "north wing" },
+    { id: "lab", name: "Science lab", x: 20, z: 9, w: 8, d: 7, h: 3.0, tint: "lab", note: "north wing" },
+    { id: "classC", name: "Classroom C", x: 28, z: 9, w: 9, d: 6, h: 3.0, tint: "class", note: "north-east" },
+    { id: "staff", name: "Staff room", x: 37, z: 6, w: 5, d: 5, h: 2.8, tint: "staff", note: "east of corridor" }
+  ];
 
-const mathEl = document.getElementById("math");
-mathEl.innerHTML = [
-  "Front  " + fmt(W) + " × " + fmt(H) + " = " + fmt(W * H) + "  − door " + fmt(DOOR.w) + " × " + fmt(DOOR.h) + " = " + fmt(DOOR.w * DOOR.h) + "  → " + fmt(W * H - DOOR.w * DOOR.h),
-  "Right  " + fmt(D) + " × " + fmt(H) + " = " + fmt(D * H) + "  − window " + fmt(WIN.w) + " × " + fmt(WIN.h) + " = " + fmt(WIN.w * WIN.h) + "  → " + fmt(D * H - WIN.w * WIN.h),
-  "Back   " + fmt(W) + " × " + fmt(H) + " = " + fmt(W * H),
-  "Left   " + fmt(D) + " × " + fmt(H) + " = " + fmt(D * H),
-  "Ceiling " + fmt(W) + " × " + fmt(D) + " = " + fmt(W * D),
-  "Floor  " + fmt(W) + " × " + fmt(D) + " = " + fmt(W * D) + "  · never included",
-].join("<br>");
+  function op(kind, w, h, left, bottom, label) {
+    return { kind: kind, w: w, h: h, left: left, bottom: bottom, label: label };
+  }
+  const D = function (w, h, left, label) { return op("door", w, h, left, 0, label); };
+  const DW = function (w, h, left, label) { return op("door-wide", w, h, left, 0, label); };
+  const W = function (w, h, left, bottom, label) { return op("window", w, h, left, bottom, label); };
 
-const listEl = document.getElementById("list");
-const totalEl = document.getElementById("total");
-const hoverChip = document.getElementById("hoverChip");
-const toastEl = document.getElementById("toast");
-let toastTimer = 0;
-function showToast(msg) {
-  toastEl.textContent = msg;
-  toastEl.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1600);
-}
+  const openings = {
+    "lobby-s": [DW(1.8, 2.2, 3.1, "Entry doors 1.8 \u00d7 2.2")],
+    "lobby-n": [DW(1.6, 2.2, 3.2, "To corridor 1.6 \u00d7 2.2")],
+    "classA-n": [D(0.9, 2.1, 4.55, "Door 0.9 \u00d7 2.1")],
+    "classA-s": [W(1.8, 1.2, 1.4, 1.0, "Window 1.8 \u00d7 1.2"), W(1.8, 1.2, 6.6, 1.0, "Window 1.8 \u00d7 1.2")],
+    "classA-w": [W(1.4, 1.2, 2.2, 1.0, "Window 1.4 \u00d7 1.2")],
+    "classB-n": [D(0.9, 2.1, 3.55, "Door 0.9 \u00d7 2.1")],
+    "classB-s": [W(1.6, 1.2, 1.2, 1.0, "Window 1.6 \u00d7 1.2"), W(1.6, 1.2, 5.0, 1.0, "Window 1.6 \u00d7 1.2")],
+    "office-n": [D(0.9, 2.1, 2.55, "Door 0.9 \u00d7 2.1")],
+    "office-s": [W(1.4, 1.1, 2.3, 1.0, "Window 1.4 \u00d7 1.1")],
+    "wash-n": [D(0.8, 2.1, 2.1, "Door 0.8 \u00d7 2.1")],
+    "corridor-s": [
+      D(0.9, 2.1, 4.55, "Classroom A 0.9 \u00d7 2.1"),
+      DW(1.6, 2.2, 13.2, "Lobby 1.6 \u00d7 2.2"),
+      D(0.9, 2.1, 21.55, "Classroom B 0.9 \u00d7 2.1"),
+      D(0.9, 2.1, 28.55, "Office 0.9 \u00d7 2.1"),
+      D(0.8, 2.1, 33.6, "Washrooms 0.8 \u00d7 2.1")
+    ],
+    "corridor-n": [
+      DW(1.8, 2.2, 5.1, "Gym 1.8 \u00d7 2.2"),
+      D(0.9, 2.1, 15.55, "Library 0.9 \u00d7 2.1"),
+      D(0.9, 2.1, 23.55, "Lab 0.9 \u00d7 2.1"),
+      D(0.9, 2.1, 31.55, "Classroom C 0.9 \u00d7 2.1")
+    ],
+    "corridor-e": [D(0.9, 2.1, 1.05, "Staff 0.9 \u00d7 2.1")],
+    "gym-s": [DW(1.8, 2.2, 5.1, "To corridor 1.8 \u00d7 2.2")],
+    "gym-n": [W(2.0, 1.4, 2.0, 3.6, "Clerestory 2.0 \u00d7 1.4"), W(2.0, 1.4, 8.0, 3.6, "Clerestory 2.0 \u00d7 1.4")],
+    "gym-w": [W(1.6, 1.4, 2.4, 3.6, "Clerestory 1.6 \u00d7 1.4"), W(1.6, 1.4, 6.0, 3.6, "Clerestory 1.6 \u00d7 1.4")],
+    "library-s": [D(0.9, 2.1, 3.55, "Door 0.9 \u00d7 2.1")],
+    "library-n": [W(1.8, 1.3, 1.2, 1.0, "Window 1.8 \u00d7 1.3"), W(1.8, 1.3, 5.0, 1.0, "Window 1.8 \u00d7 1.3")],
+    "lab-s": [D(0.9, 2.1, 3.55, "Door 0.9 \u00d7 2.1")],
+    "lab-n": [W(1.6, 1.2, 1.2, 1.0, "Window 1.6 \u00d7 1.2"), W(1.6, 1.2, 5.2, 1.0, "Window 1.6 \u00d7 1.2")],
+    "classC-s": [D(0.9, 2.1, 4.05, "Door 0.9 \u00d7 2.1")],
+    "classC-n": [W(1.6, 1.2, 1.4, 1.0, "Window 1.6 \u00d7 1.2"), W(1.6, 1.2, 5.8, 1.0, "Window 1.6 \u00d7 1.2")],
+    "classC-e": [W(1.4, 1.2, 2.2, 1.0, "Window 1.4 \u00d7 1.2")],
+    "staff-w": [D(0.9, 2.1, 2.05, "Door 0.9 \u00d7 2.1")],
+    "staff-e": [W(1.2, 1.1, 1.9, 1.0, "Window 1.2 \u00d7 1.1")]
+  };
 
-function el(tag, cls, text) {
-  const n = document.createElement(tag);
-  if (cls) n.className = cls;
-  if (text != null) n.textContent = text;
-  return n;
-}
-function renderSidebar() {
-  listEl.innerHTML = "";
-  for (const s of surfaces) {
-    const btn = el("button", "row " + (s.selectable ? (s.included ? "on" : "off") : "locked"));
-    btn.type = "button";
-    const left = el("span");
-    left.appendChild(el("span", "name", s.label));
-    let detail;
-    if (s.kind === "floor") detail = "includeFloor: false · " + fmt(s.gross) + " m² ignored";
-    else if (s.opening) detail = fmt(s.length) + " × " + fmt(s.height) + " = " + fmt(s.gross) + " - " + fmt(s.opening) + " opening";
-    else detail = fmt(s.length) + " × " + fmt(s.height) + " = " + fmt(s.gross);
-    left.appendChild(el("span", "detail", detail));
-    btn.appendChild(left);
-    if (s.kind === "floor") btn.appendChild(el("span", "pill never", "never"));
-    else btn.appendChild(el("span", "pill " + (s.included ? "yes" : "no"), s.included ? "included" : "excluded"));
-    btn.appendChild(el("span", "m2", s.kind === "floor" ? "-" : fmt(netOf(s))));
-    btn.addEventListener("click", () => toggle(s.id));
-    listEl.appendChild(btn);
-    if (s.openingLabel) {
-      const child = el("div", "child");
-      child.appendChild(el("span", null, "− " + s.openingLabel + " (subtracts if wall included)"));
-      child.appendChild(el("span", "m2", "-" + fmt(s.opening)));
-      listEl.appendChild(child);
+  const surfaces = [];
+  rooms.forEach(function (room) {
+    [
+      { dir: "s", label: "south wall", length: room.w, height: room.h },
+      { dir: "n", label: "north wall", length: room.w, height: room.h },
+      { dir: "w", label: "west wall", length: room.d, height: room.h },
+      { dir: "e", label: "east wall", length: room.d, height: room.h }
+    ].forEach(function (side) {
+      const id = room.id + "-" + side.dir;
+      const ops = openings[id] || [];
+      surfaces.push({
+        id: id, roomId: room.id, kind: "wall",
+        label: room.name + " \u2014 " + side.label,
+        selectable: true, included: true,
+        length: side.length, height: side.height,
+        gross: side.length * side.height,
+        opening: openingArea(ops),
+        openingLabel: openingLabel(ops),
+        openings: ops
+      });
+    });
+    surfaces.push({
+      id: room.id + "-ceil", roomId: room.id, kind: "ceiling",
+      label: room.name + " \u2014 ceiling",
+      selectable: true, included: true,
+      length: room.w, height: room.d,
+      gross: room.w * room.d, opening: 0, openingLabel: null, openings: []
+    });
+    surfaces.push({
+      id: room.id + "-floor", roomId: room.id, kind: "floor",
+      label: room.name + " \u2014 floor",
+      selectable: false, included: false,
+      length: room.w, height: room.d,
+      gross: room.w * room.d, opening: 0, openingLabel: null, openings: [],
+      lockReason: "includeFloor: false \u00b7 never included"
+    });
+  });
+
+  function netOf(s) {
+    if (!s.selectable || !s.included) return 0;
+    return Math.max(0, s.gross - s.opening);
+  }
+  function totalOf(list) {
+    return r2(list.reduce(function (sum, s) { return sum + netOf(s); }, 0));
+  }
+  function roomSurfaces(id) {
+    return surfaces.filter(function (s) { return s.roomId === id; });
+  }
+
+  const minX = Math.min.apply(null, rooms.map(function (r) { return r.x; }));
+  const maxX = Math.max.apply(null, rooms.map(function (r) { return r.x + r.w; }));
+  const minZ = Math.min.apply(null, rooms.map(function (r) { return r.z; }));
+  const maxZ = Math.max.apply(null, rooms.map(function (r) { return r.z + r.d; }));
+  const OX = (minX + maxX) / 2;
+  const OZ = (minZ + maxZ) / 2;
+  const PX = 24;
+  const INSET = 0.06;
+
+  const model = document.getElementById("model");
+  const stage = document.getElementById("stage");
+  const listEl = document.getElementById("list");
+  const totalEl = document.getElementById("total");
+  const hoverEl = document.getElementById("hover");
+  const toastEl = document.getElementById("toast");
+  const walkEl = document.getElementById("walk");
+  const dimsEl = document.getElementById("dims");
+  const faces = {};
+  let focusedId = null;
+  let openRoomId = "lobby";
+  let toastTimer = 0;
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 1700);
+  }
+
+  function addFace(id, cls, wM, hM, transform, html) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "face " + cls;
+    b.dataset.id = id;
+    b.style.width = (wM * PX) + "px";
+    b.style.height = (hM * PX) + "px";
+    b.style.transform = "translate(-50%, -50%) " + transform;
+    if (html) b.innerHTML = html;
+    b.addEventListener("pointerenter", function () { setHover(id); });
+    b.addEventListener("pointerleave", function () { setHover(null); });
+    model.appendChild(b);
+    if (!faces[id]) faces[id] = [];
+    faces[id].push(b);
+    return b;
+  }
+
+  rooms.forEach(function (room) {
+    const w = room.w - INSET * 2;
+    const d = room.d - INSET * 2;
+    const h = room.h;
+    const cx = (room.x + room.w / 2 - OX) * PX;
+    const cz = (room.z + room.d / 2 - OZ) * PX;
+    const cy = -(h / 2) * PX;
+    const tint = "tint-" + room.tint;
+    function T(extra) {
+      return "translate3d(" + cx + "px," + cy + "px," + cz + "px) " + extra;
+    }
+    addFace(room.id + "-s", "wall " + tint, w, h, T("translateZ(" + (d / 2 * PX) + "px)"),
+      "<span class=\"lbl\">" + room.name.toUpperCase() + "</span>");
+    addFace(room.id + "-n", "wall " + tint, w, h, T("rotateY(180deg) translateZ(" + (d / 2 * PX) + "px)"));
+    addFace(room.id + "-e", "wall " + tint, d, h, T("rotateY(90deg) translateZ(" + (w / 2 * PX) + "px)"));
+    addFace(room.id + "-w", "wall " + tint, d, h, T("rotateY(-90deg) translateZ(" + (w / 2 * PX) + "px)"));
+    addFace(room.id + "-ceil", "ceiling", w, d, T("rotateX(90deg) translateZ(" + (h / 2 * PX) + "px)"));
+    addFace(room.id + "-floor", "floor", w, d, T("rotateX(-90deg) translateZ(" + (h / 2 * PX) + "px)"),
+      "<span class=\"lbl\">FLOOR<br>never included</span>");
+  });
+
+  Object.keys(openings).forEach(function (id) {
+    (faces[id] || []).forEach(function (parent) {
+      openings[id].forEach(function (o) {
+        const node = document.createElement("div");
+        node.className = "opening " + o.kind;
+        node.style.width = (o.w * PX) + "px";
+        node.style.height = (o.h * PX) + "px";
+        node.style.left = (o.left * PX) + "px";
+        node.style.bottom = (o.bottom * PX) + "px";
+        parent.appendChild(node);
+      });
+    });
+  });
+
+  function paintFaces() {
+    surfaces.forEach(function (s) {
+      (faces[s.id] || []).forEach(function (f) {
+        f.classList.toggle("on", s.selectable && s.included);
+        f.classList.toggle("off", s.selectable && !s.included);
+        f.classList.toggle("dim", !!(focusedId && s.roomId !== focusedId));
+      });
+    });
+  }
+
+  function render() {
+    walkEl.innerHTML = "";
+    rooms.forEach(function (room) {
+      const chip = el("button", "chip" + (focusedId === room.id ? " on" : ""));
+      chip.type = "button";
+      chip.textContent = room.name;
+      chip.addEventListener("click", function () { focusRoom(room.id); });
+      walkEl.appendChild(chip);
+    });
+    const allChip = el("button", "chip" + (focusedId === null ? " on" : ""));
+    allChip.type = "button";
+    allChip.textContent = "Whole school";
+    allChip.addEventListener("click", function () { focusRoom(null); });
+    walkEl.appendChild(allChip);
+
+    listEl.innerHTML = "";
+    rooms.forEach(function (room) {
+      const rs = roomSurfaces(room.id);
+      const t = totalOf(rs);
+      const block = el("div", "room-block" + (openRoomId === room.id ? " open" : "") + (focusedId === room.id ? " focused" : ""));
+      const head = el("button", "room-h");
+      head.type = "button";
+      const left = el("span");
+      left.appendChild(el("span", "name", room.name));
+      left.appendChild(el("span", "detail", fmt(room.w) + " \u00d7 " + fmt(room.d) + " \u00d7 " + fmt(room.h) + " m \u00b7 " + room.note));
+      head.appendChild(left);
+      head.appendChild(el("span", "pill yes", "room"));
+      head.appendChild(el("span", "m2", fmt(t)));
+      head.addEventListener("click", function () {
+        openRoomId = openRoomId === room.id ? null : room.id;
+        focusRoom(room.id);
+      });
+      block.appendChild(head);
+      const body = el("div", "room-body");
+      rs.forEach(function (s) {
+        const btn = el("button", "row " + (s.selectable ? (s.included ? "on" : "off") : "locked"));
+        btn.type = "button";
+        const l = el("span");
+        l.appendChild(el("span", "name", s.label.replace(room.name + " \u2014 ", "")));
+        var detail;
+        if (!s.selectable) detail = (s.lockReason || "not selectable") + " \u00b7 " + fmt(s.gross) + " m\u00b2 ignored";
+        else if (s.opening) detail = fmt(s.length) + " \u00d7 " + fmt(s.height) + " = " + fmt(s.gross) + " \u2212 " + fmt(s.opening) + " opening";
+        else detail = fmt(s.length) + " \u00d7 " + fmt(s.height) + " = " + fmt(s.gross);
+        l.appendChild(el("span", "detail", detail));
+        btn.appendChild(l);
+        if (!s.selectable) btn.appendChild(el("span", "pill never", "never"));
+        else btn.appendChild(el("span", "pill " + (s.included ? "yes" : "no"), s.included ? "included" : "excluded"));
+        btn.appendChild(el("span", "m2", s.selectable ? fmt(netOf(s)) : "\u2014"));
+        btn.addEventListener("click", function () { toggle(s.id); });
+        body.appendChild(btn);
+        if (s.openingLabel) {
+          const child = el("div", "child");
+          child.appendChild(el("span", null, "\u2212 " + s.openingLabel + " (subtracts if wall included)"));
+          child.appendChild(el("span", "m2", "\u2212" + fmt(s.opening)));
+          body.appendChild(child);
+        }
+      });
+      block.appendChild(body);
+      listEl.appendChild(block);
+    });
+
+    const grand = totalOf(surfaces);
+    totalEl.innerHTML = "";
+    totalEl.appendChild(document.createTextNode(fmt(grand)));
+    totalEl.appendChild(el("span", null, "m\u00b2"));
+    dimsEl.textContent = rooms.length + " indoor rooms \u00b7 walls + ceilings \u2212 openings \u00b7 floors out";
+    paintFaces();
+  }
+
+  function toggle(id) {
+    const s = surfaces.find(function (x) { return x.id === id; });
+    if (!s) return;
+    if (!s.selectable) {
+      showToast("Floor never included");
+      return;
+    }
+    s.included = !s.included;
+    openRoomId = s.roomId;
+    render();
+  }
+
+  function setHover(id) {
+    Object.keys(faces).forEach(function (k) {
+      faces[k].forEach(function (f) { f.classList.toggle("hover", k === id); });
+    });
+    if (!id) { hoverEl.style.display = "none"; return; }
+    const s = surfaces.find(function (x) { return x.id === id; });
+    if (!s) { hoverEl.style.display = "none"; return; }
+    hoverEl.style.display = "block";
+    hoverEl.innerHTML = "";
+    hoverEl.appendChild(el("strong", null, s.label));
+    var sub;
+    if (!s.selectable) sub = s.lockReason || "Not selectable";
+    else sub = (s.included ? "Included" : "Excluded") + " \u00b7 " + fmt(netOf(s)) + " m\u00b2 \u00b7 click to toggle";
+    hoverEl.appendChild(el("div", "sub", sub));
+  }
+
+  const orbit = { yaw: 28, pitch: 48, zoom: 0.42, panX: 0, panY: 36, dragging: false, button: 0, lx: 0, ly: 0, moved: false };
+
+  function applyOrbit() {
+    orbit.pitch = Math.max(-80, Math.min(80, orbit.pitch));
+    orbit.zoom = Math.max(0.18, Math.min(2.4, orbit.zoom));
+    model.style.transform =
+      "translate(" + orbit.panX + "px," + orbit.panY + "px) rotateX(" + orbit.pitch + "deg) rotateY(" + orbit.yaw + "deg) scale(" + orbit.zoom + ")";
+  }
+
+  function focusRoom(id) {
+    focusedId = id;
+    if (id) openRoomId = id;
+    const room = rooms.find(function (r) { return r.id === id; });
+    if (room) {
+      orbit.panX = -((room.x + room.w / 2 - OX) * PX) * 0.35;
+      orbit.panY = 24;
+      orbit.zoom = room.id === "gym" || room.id === "corridor" ? 0.72 : 0.95;
+      orbit.pitch = 36;
+    } else {
+      orbit.panX = 0;
+      orbit.panY = 36;
+      orbit.pitch = 48;
+      fitZoom();
+    }
+    applyOrbit();
+    render();
+  }
+
+  function fitZoom() {
+    const rect = stage.getBoundingClientRect();
+    if (rect.width < 40 || rect.height < 40) return;
+    const fitW = (maxX - minX) * PX * 1.15;
+    const fitH = (maxZ - minZ) * PX * 1.35;
+    const s = Math.min(rect.width / fitW, rect.height / fitH);
+    if (focusedId === null) orbit.zoom = Math.max(0.22, Math.min(1.1, s * 0.88));
+    applyOrbit();
+  }
+
+  stage.addEventListener("pointerdown", function (ev) {
+    orbit.dragging = true;
+    orbit.button = ev.button;
+    orbit.lx = ev.clientX;
+    orbit.ly = ev.clientY;
+    orbit.moved = false;
+    stage.setPointerCapture(ev.pointerId);
+  });
+  stage.addEventListener("pointermove", function (ev) {
+    if (!orbit.dragging) return;
+    const dx = ev.clientX - orbit.lx;
+    const dy = ev.clientY - orbit.ly;
+    if (Math.hypot(dx, dy) > 4) orbit.moved = true;
+    orbit.lx = ev.clientX;
+    orbit.ly = ev.clientY;
+    if (orbit.button === 2 || ev.shiftKey) {
+      orbit.panX += dx;
+      orbit.panY += dy;
+    } else {
+      orbit.yaw += dx * 0.4;
+      orbit.pitch -= dy * 0.4;
+    }
+    applyOrbit();
+  });
+  function faceIdFromPoint(x, y) {
+    const n = document.elementFromPoint(x, y);
+    const face = n && n.closest ? n.closest(".face") : null;
+    if (!face || !stage.contains(face)) return null;
+    return face.dataset.id;
+  }
+  function endDrag(ev) {
+    const wasDrag = orbit.dragging;
+    const moved = orbit.moved;
+    orbit.dragging = false;
+    if (ev && ev.type === "pointerup" && wasDrag && !moved) {
+      const id = faceIdFromPoint(ev.clientX, ev.clientY);
+      if (id) toggle(id);
     }
   }
-  totalEl.innerHTML = "";
-  totalEl.appendChild(document.createTextNode(fmt(totalPaintable())));
-  totalEl.appendChild(el("span", null, "m²"));
-  paintFaces();
-}
+  stage.addEventListener("pointerup", endDrag);
+  stage.addEventListener("pointercancel", endDrag);
+  stage.addEventListener("contextmenu", function (ev) { ev.preventDefault(); });
+  stage.addEventListener("wheel", function (ev) {
+    ev.preventDefault();
+    orbit.zoom *= ev.deltaY > 0 ? 0.94 : 1.06;
+    applyOrbit();
+  }, { passive: false });
 
-function toggle(id) {
-  const s = surfaces.find((x) => x.id === id);
-  if (!s) return;
-  if (!s.selectable) {
-    showToast("Floor never included");
-    return;
-  }
-  s.included = !s.included;
-  renderSidebar();
-}
-
-
-const PX = 80;
-const roomEl = document.getElementById("room");
-const stage = document.getElementById("stage");
-const faces = {};
-
-function addFace(id, cls, w, h, transform, html) {
-  const b = document.createElement("button");
-  b.type = "button";
-  b.className = "face " + cls;
-  b.dataset.id = id;
-  b.style.width = w + "px";
-  b.style.height = h + "px";
-  b.style.left = "50%";
-  b.style.top = "50%";
-  b.style.transform = "translate(-50%, -50%) " + transform;
-  if (html) b.innerHTML = html;
-b.addEventListener("pointerenter", () => setHover(id));
-  b.addEventListener("pointerleave", () => setHover(null));
-  roomEl.appendChild(b);
-  faces[id] = b;
-  return b;
-}
-
-const rw = W * PX;
-const rd = D * PX;
-const rh = H * PX;
-addFace("front", "wall", rw, rh, "translateZ(" + (rd / 2) + "px)");
-addFace("back", "wall", rw, rh, "rotateY(180deg) translateZ(" + (rd / 2) + "px)");
-addFace("right", "wall", rd, rh, "rotateY(90deg) translateZ(" + (rw / 2) + "px)");
-addFace("left", "wall", rd, rh, "rotateY(-90deg) translateZ(" + (rw / 2) + "px)");
-addFace("ceiling", "ceiling", rw, rd, "rotateX(90deg) translateZ(" + (rh / 2) + "px)");
-addFace("floor", "floor", rw, rd, "rotateX(-90deg) translateZ(" + (rh / 2) + "px)", "<span class=\"lbl\">FLOOR<br>never included</span>");
-
-function placeOpening(parentId, cls, wM, hM, leftM, bottomM) {
-  const parent = faces[parentId];
-  const o = document.createElement("div");
-  o.className = "opening " + cls;
-  o.style.width = (wM * PX) + "px";
-  o.style.height = (hM * PX) + "px";
-  o.style.left = (leftM * PX) + "px";
-  o.style.bottom = (bottomM * PX) + "px";
-  parent.appendChild(o);
-}
-placeOpening("front", "door", DOOR.w, DOOR.h, 1.1, 0);
-placeOpening("right", "window", WIN.w, WIN.h, 1.3, 0.9);
-
-function paintFaces() {
-  for (const s of surfaces) {
-    const f = faces[s.id];
-    if (!f) continue;
-    f.classList.toggle("on", s.selectable && s.included);
-    f.classList.toggle("off", s.selectable && !s.included);
-  }
-}
-
-let hoveredId = null;
-function setHover(id) {
-  hoveredId = id;
-  for (const k of Object.keys(faces)) faces[k].classList.toggle("hover", k === id);
-  if (!id) {
-    hoverChip.style.display = "none";
-    return;
-  }
-  const s = surfaces.find((x) => x.id === id);
-  hoverChip.style.display = "block";
-  hoverChip.innerHTML = "";
-  hoverChip.appendChild(el("strong", null, s.kind === "floor" ? "Floor" : s.label));
-  hoverChip.appendChild(el("div", "sub", s.kind === "floor" ? "Not selectable · never included" : ((s.included ? "Included" : "Excluded") + " · " + fmt(netOf(s)) + " m\u00b2 · click to toggle")));
-}
-
-const orbit = { yaw: 38, pitch: 24, zoom: 0.92, panX: 0, panY: 18, dragging: false, button: 0, lx: 0, ly: 0, moved: false };
-function applyOrbit() {
-  orbit.pitch = Math.max(-80, Math.min(80, orbit.pitch));
-  orbit.zoom = Math.max(0.45, Math.min(2.2, orbit.zoom));
-  roomEl.style.transform = "translate(" + orbit.panX + "px," + orbit.panY + "px) rotateX(" + orbit.pitch + "deg) rotateY(" + orbit.yaw + "deg) scale(" + orbit.zoom + ")";
-}
-applyOrbit();
-
-stage.addEventListener("pointerdown", (ev) => {
-  orbit.dragging = true;
-  orbit.button = ev.button;
-  orbit.lx = ev.clientX;
-  orbit.ly = ev.clientY;
-  orbit.moved = false;
-  stage.setPointerCapture(ev.pointerId);
-});
-stage.addEventListener("pointermove", (ev) => {
-  if (!orbit.dragging) return;
-  const dx = ev.clientX - orbit.lx;
-  const dy = ev.clientY - orbit.ly;
-  if (Math.hypot(dx, dy) > 4) orbit.moved = true;
-  orbit.lx = ev.clientX;
-  orbit.ly = ev.clientY;
-  if (orbit.button === 2 || ev.shiftKey) {
-    orbit.panX += dx;
-    orbit.panY += dy;
-  } else {
-    orbit.yaw += dx * 0.4;
-    orbit.pitch -= dy * 0.4;
-  }
   applyOrbit();
-});
-function faceIdFromPoint(x, y) {
-  const n = document.elementFromPoint(x, y);
-  const face = n && n.closest ? n.closest(".face") : null;
-  return face ? face.dataset.id : null;
-}
-function endDrag(ev) {
-  const wasDrag = orbit.dragging;
-  const moved = orbit.moved;
-  orbit.dragging = false;
-  if (ev && ev.type === "pointerup" && wasDrag && !moved) {
-    const id = faceIdFromPoint(ev.clientX, ev.clientY);
-    if (id) toggle(id);
-  }
-}
-stage.addEventListener("pointerup", endDrag);
-stage.addEventListener("pointercancel", endDrag);
-stage.addEventListener("contextmenu", (ev) => ev.preventDefault());
-stage.addEventListener("wheel", (ev) => {
-  ev.preventDefault();
-  orbit.zoom *= ev.deltaY > 0 ? 0.94 : 1.06;
-  applyOrbit();
-}, { passive: false });
-
-renderSidebar();
-
+  render();
+  window.addEventListener("resize", fitZoom);
+  requestAnimationFrame(fitZoom);
+})();
   </script>
 </body>
 </html>
