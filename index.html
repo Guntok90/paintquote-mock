@@ -645,9 +645,9 @@
     const rect = stage.getBoundingClientRect();
     const viewW = Math.max(rect.width, 320);
     const viewH = Math.max(rect.height, 240);
-    const fitW = (maxX - minX) * PX * 1.05;
-    const fitH = (maxZ - minZ) * PX * 1.2;
-    return clamp(Math.min(viewW / fitW, viewH / fitH) * 1.12, 0.1, 0.65);
+    const fitW = (maxX - minX) * PX * 1.12;
+    const fitH = (maxZ - minZ) * PX * 1.35;
+    return clamp(Math.min(viewW / fitW, viewH / fitH) * 0.95, 0.08, 0.45);
   }
 
   function syncCeilings() {
@@ -704,14 +704,16 @@
     } else {
       /* Roof-off plan: classic orbit+scale (stays inside the perspective frustum). */
       const t = (planT - 0.5) / 0.5;
-      const zoomNear = planFitZoom() * 1.25;
+      const zoomNear = planFitZoom() * 1.2;
       const zoomFar = planFitZoom();
       const zoom = lerp(zoomNear, zoomFar, t);
-      const pitch = lerp(36, 50, t);
+      const pitch = lerp(36, 52, t);
       const yaw = lerpAngle(yawLook, 26 + cam.yawOff * 0.2, t);
+      /* Push the model into the scene so large PX geometry does not clip the near plane. */
+      const push = lerp(120, 280, t);
       model.style.transform =
-        "translate(" + cam.panX + "px," + (20 + cam.panY * 0.02) + "px) rotateX(" +
-        pitch + "deg) rotateY(" + yaw + "deg) scale(" + zoom + ")";
+        "translate(" + cam.panX + "px," + (24 + cam.panY * 0.02) + "px) rotateX(" +
+        pitch + "deg) rotateY(" + yaw + "deg) translateZ(" + (-push) + "px) scale(" + zoom + ")";
     }
     syncCeilings();
     paintFaces();
