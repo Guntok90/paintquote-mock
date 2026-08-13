@@ -69,6 +69,12 @@
       font: 650 11px/1.2 "Segoe UI", sans-serif; color: #1a1d24;
       cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
     }
+    /* Zoom-out: hide ceilings so you can look into rooms from above */
+    .model.ceilings-open .face.ceiling {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .face.ceiling { transition: opacity 0.2s ease; }
     .face.wall { background: #e8eaed; }
     .face.tint-class { background: #efe6c8; }
     .face.tint-lobby { background: #e8dcc8; }
@@ -188,7 +194,7 @@
         <div class="stage" id="stage"><div class="scene"><div class="model" id="model"></div></div></div>
         <div class="hover-chip" id="hover"></div>
         <div class="toast" id="toast"></div>
-        <div class="hint">Drag to orbit · scroll to zoom · right-drag to pan · click a wall or ceiling to include / exclude · chips focus a room</div>
+        <div class="hint">You start inside the corridor · drag to look · scroll out to lift ceilings and see the whole school · click walls/ceilings · chips jump you inside a room</div>
       </div>
       <aside class="sidebar">
         <div class="side-head">
@@ -366,14 +372,16 @@
     toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 1700);
   }
 
-  function addFace(id, cls, wM, hM, transform, html) {
+  function addFace(id, cls, wM, hM, transform, html, mirrorOpenings) {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "face " + cls;
     b.dataset.id = id;
+    b.dataset.baseTransform = "translate(-50%, -50%) " + transform;
     b.style.width = (wM * PX) + "px";
     b.style.height = (hM * PX) + "px";
-    b.style.transform = "translate(-50%, -50%) " + transform;
+    b.style.transform = b.dataset.baseTransform;
+    if (mirrorOpenings) b.dataset.mirrorOpenings = "1";
     if (html) b.innerHTML = html;
     b.addEventListener("pointerenter", function () { setHover(id); });
     b.addEventListener("pointerleave", function () { setHover(null); });
@@ -383,6 +391,8 @@
     return b;
   }
 
+  /* Walls: outward + inward faces so interiors read when the camera is inside,
+     and the building still reads when zoomed out. Same surface id = one toggle. */
   rooms.forEach(function (room) {
     const w = room.w - INSET * 2;
     const d = room.d - INSET * 2;
@@ -391,27 +401,38 @@
     const cz = (room.z + room.d / 2 - OZ) * PX;
     const cy = -(h / 2) * PX;
     const tint = "tint-" + room.tint;
+    const skin = 0.6;
     function T(extra) {
       return "translate3d(" + cx + "px," + cy + "px," + cz + "px) " + extra;
     }
-    addFace(room.id + "-s", "wall " + tint, w, h, T("translateZ(" + (d / 2 * PX) + "px)"),
+    function wallPair(id, len, outward, labelHtml) {
+      addFace(id, "wall " + tint, len, h, T(outward), labelHtml, false);
+      addFace(id, "wall " + tint, len, h, T(outward + " rotateY(180deg)"), null, true);
+    }
+    wallPair(room.id + "-s", w, "translateZ(" + (d / 2 * PX) + "px)",
       "<span class=\"lbl\">" + room.name.toUpperCase() + "</span>");
-    addFace(room.id + "-n", "wall " + tint, w, h, T("rotateY(180deg) translateZ(" + (d / 2 * PX) + "px)"));
-    addFace(room.id + "-e", "wall " + tint, d, h, T("rotateY(90deg) translateZ(" + (w / 2 * PX) + "px)"));
-    addFace(room.id + "-w", "wall " + tint, d, h, T("rotateY(-90deg) translateZ(" + (w / 2 * PX) + "px)"));
-    addFace(room.id + "-ceil", "ceiling", w, d, T("rotateX(90deg) translateZ(" + (h / 2 * PX) + "px)"));
-    addFace(room.id + "-floor", "floor", w, d, T("rotateX(-90deg) translateZ(" + (h / 2 * PX) + "px)"),
+    wallPair(room.id + "-n", w, "rotateY(180deg) translateZ(" + (d / 2 * PX) + "px)");
+    wallPair(room.id + "-e", d, "rotateY(90deg) translateZ(" + (w / 2 * PX) + "px)");
+    wallPair(room.id + "-w", d, "rotateY(-90deg) translateZ(" + (w / 2 * PX) + "px)");
+    /* Ceiling paint faces the room (inward). Floor stays upward for plan view. */
+    addFace(room.id + "-ceil", "ceiling", w, d,
+      T("rotateX(90deg) translateZ(" + (h / 2 * PX - skin) + "px) rotateX(180deg)"));
+    addFace(room.id + "-floor", "floor", w, d,
+      T("rotateX(-90deg) translateZ(" + (h / 2 * PX) + "px)"),
       "<span class=\"lbl\">FLOOR<br>never included</span>");
   });
 
   Object.keys(openings).forEach(function (id) {
     (faces[id] || []).forEach(function (parent) {
+      const mirror = parent.dataset.mirrorOpenings === "1";
+      const wallW = parseFloat(parent.style.width) / PX;
       openings[id].forEach(function (o) {
         const node = document.createElement("div");
         node.className = "opening " + o.kind;
         node.style.width = (o.w * PX) + "px";
         node.style.height = (o.h * PX) + "px";
-        node.style.left = (o.left * PX) + "px";
+        const left = mirror ? (wallW - o.left - o.w) : o.left;
+        node.style.left = (left * PX) + "px";
         node.style.bottom = (o.bottom * PX) + "px";
         parent.appendChild(node);
       });
@@ -525,13 +546,88 @@
     hoverEl.appendChild(el("div", "sub", sub));
   }
 
-  const orbit = { yaw: 28, pitch: 48, zoom: 0.42, panX: 0, panY: 36, dragging: false, button: 0, lx: 0, ly: 0, moved: false };
+  const CEILING_HIDE_ZOOM = 0.92;
+  const orbit = {
+    yaw: -78,
+    pitch: 6,
+    zoom: 1.75,
+    panX: 0,
+    panY: 0,
+    dragging: false,
+    button: 0,
+    lx: 0,
+    ly: 0,
+    moved: false
+  };
+
+  function roomCenterPx(room) {
+    return {
+      x: (room.x + room.w / 2 - OX) * PX,
+      y: -(room.h / 2) * PX,
+      z: (room.z + room.d / 2 - OZ) * PX
+    };
+  }
+
+  /* Prefer looking toward a doorway so the room does not feel like a sealed box. */
+  function lookYawForRoom(room) {
+    const prefs = {
+      corridor: -78,
+      lobby: 8,
+      gym: 175,
+      library: 175,
+      lab: 175,
+      classA: 8,
+      classB: 8,
+      classC: 175,
+      office: 8,
+      wash: 8,
+      staff: -90
+    };
+    return prefs[room.id] != null ? prefs[room.id] : 20;
+  }
+
+  function placeInsideRoom(room, opts) {
+    opts = opts || {};
+    const c = roomCenterPx(room);
+    const z = opts.zoom != null ? opts.zoom : (room.id === "corridor" ? 1.7 : room.id === "gym" ? 1.15 : 1.85);
+    orbit.yaw = opts.yaw != null ? opts.yaw : lookYawForRoom(room);
+    orbit.pitch = opts.pitch != null ? opts.pitch : (room.id === "corridor" ? 6 : 10);
+    orbit.zoom = z;
+    /* Pan so the room center sits near the viewport after scale (yaw≈0 approx; good enough for mock). */
+    const yawR = orbit.yaw * Math.PI / 180;
+    const pitchR = orbit.pitch * Math.PI / 180;
+    const sx = c.x * z;
+    const sy = c.y * z;
+    const sz = c.z * z;
+    const x1 = sx * Math.cos(yawR) + sz * Math.sin(yawR);
+    const z1 = -sx * Math.sin(yawR) + sz * Math.cos(yawR);
+    const y2 = sy * Math.cos(pitchR) - z1 * Math.sin(pitchR);
+    orbit.panX = -x1;
+    orbit.panY = -y2 + (opts.eyeLift != null ? opts.eyeLift : 18);
+  }
+
+  function syncCeilings() {
+    const open = orbit.zoom < CEILING_HIDE_ZOOM;
+    model.classList.toggle("ceilings-open", open);
+    Object.keys(faces).forEach(function (id) {
+      if (id.indexOf("-ceil") === -1) return;
+      faces[id].forEach(function (f) {
+        const base = f.dataset.baseTransform || f.style.transform;
+        if (open) {
+          f.style.transform = base + " translateY(-140px)";
+        } else {
+          f.style.transform = base;
+        }
+      });
+    });
+  }
 
   function applyOrbit() {
-    orbit.pitch = Math.max(-80, Math.min(80, orbit.pitch));
-    orbit.zoom = Math.max(0.18, Math.min(2.4, orbit.zoom));
+    orbit.pitch = Math.max(-25, Math.min(82, orbit.pitch));
+    orbit.zoom = Math.max(0.2, Math.min(2.8, orbit.zoom));
     model.style.transform =
       "translate(" + orbit.panX + "px," + orbit.panY + "px) rotateX(" + orbit.pitch + "deg) rotateY(" + orbit.yaw + "deg) scale(" + orbit.zoom + ")";
+    syncCeilings();
   }
 
   function focusRoom(id) {
@@ -539,14 +635,12 @@
     if (id) openRoomId = id;
     const room = rooms.find(function (r) { return r.id === id; });
     if (room) {
-      orbit.panX = -((room.x + room.w / 2 - OX) * PX) * 0.35;
-      orbit.panY = 24;
-      orbit.zoom = room.id === "gym" || room.id === "corridor" ? 0.72 : 0.95;
-      orbit.pitch = 36;
+      placeInsideRoom(room);
     } else {
       orbit.panX = 0;
-      orbit.panY = 36;
-      orbit.pitch = 48;
+      orbit.panY = 28;
+      orbit.pitch = 54;
+      orbit.yaw = 28;
       fitZoom();
     }
     applyOrbit();
@@ -559,7 +653,7 @@
     const fitW = (maxX - minX) * PX * 1.15;
     const fitH = (maxZ - minZ) * PX * 1.35;
     const s = Math.min(rect.width / fitW, rect.height / fitH);
-    if (focusedId === null) orbit.zoom = Math.max(0.22, Math.min(1.1, s * 0.88));
+    if (focusedId === null) orbit.zoom = Math.max(0.22, Math.min(0.85, s * 0.82));
     applyOrbit();
   }
 
@@ -611,10 +705,14 @@
     applyOrbit();
   }, { passive: false });
 
+  focusedId = "corridor";
+  openRoomId = "corridor";
+  placeInsideRoom(rooms.find(function (r) { return r.id === "corridor"; }));
   applyOrbit();
   render();
-  window.addEventListener("resize", fitZoom);
-  requestAnimationFrame(fitZoom);
+  window.addEventListener("resize", function () {
+    if (focusedId === null) fitZoom();
+  });
 })();
   </script>
 </body>
