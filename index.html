@@ -49,12 +49,6 @@
       position: relative; min-width: 0; min-height: 0;
       background: radial-gradient(ellipse at 50% 42%, #1a1d26 0%, #0e1015 70%);
     }
-    .vision {
-      position: absolute; top: 10px; right: 10px; max-width: 360px; z-index: 2;
-      color: var(--warn); font-size: 11px; font-weight: 600; line-height: 1.35;
-      background: rgba(36,28,16,0.92); border: 1px solid #5a4a22; border-radius: 8px; padding: 7px 9px;
-      pointer-events: none;
-    }
     .stage {
       width: 100%; height: 100%; perspective: 780px; perspective-origin: 50% 42%;
       overflow: hidden; touch-action: none; cursor: grab; user-select: none;
@@ -76,7 +70,17 @@
       cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);
       opacity: 1;
     }
-    /* Only after zoom-out threshold: hide ceilings so rooms read from above */
+    .ground-plane {
+      position: absolute; left: 0; top: 0; margin: 0; padding: 0; border: 0;
+      pointer-events: none; transform-style: preserve-3d; backface-visibility: hidden;
+      background:
+        radial-gradient(ellipse at 48% 42%, #3a424c 0%, #232830 42%, #14181e 78%, #0c0e12 100%);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+      opacity: 0; visibility: hidden;
+    }
+    .model.ceilings-open .ground-plane {
+      opacity: 1; visibility: visible;
+    }
     .model.ceilings-open .face.ceiling {
       opacity: 0 !important;
       pointer-events: none;
@@ -99,15 +103,16 @@
         repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0,0,0,0.2) 39px, rgba(0,0,0,0.2) 40px),
         repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,0,0,0.2) 39px, rgba(0,0,0,0.2) 40px),
         #8b7355;
-      color: #f0d48a; cursor: not-allowed;
+      color: #f0d48a; cursor: pointer;
       display: grid; place-items: center; text-align: center;
     }
+    .model:not(.ceilings-open) .face.floor { cursor: not-allowed; }
     .face.on { border-color: #5b8def; box-shadow: inset 0 0 0 2px rgba(91,141,239,0.4); }
     .face.off { background: #3a4050 !important; color: #9aa0ab; }
     .face.hover:not(.floor) { filter: brightness(1.08); }
-    /* Dim only in roof-off plan view — never while standing inside */
     .model.ceilings-open .face.dim { opacity: 0.22; }
     .model.ceilings-open .face.floor { opacity: 0.55; }
+    .model.ceilings-open .face.floor.hover { filter: brightness(1.12); opacity: 0.72; }
     /* Inside a room: hide other rooms so far walls cannot blow out through doorways */
     .model.isolate-room .face.isolated {
       visibility: hidden;
@@ -117,7 +122,11 @@
     .opening { position: absolute; pointer-events: none; background: #0b1220; box-shadow: inset 0 0 0 2px #020617; }
     .opening.window { background: #1a3358; }
     .opening.door-wide { background: #1e293b; }
-    .hint { position: absolute; left: 12px; bottom: 10px; right: 12px; pointer-events: none; color: var(--muted); font-size: 11px; font-weight: 600; }
+    .opening.door-nav,
+    .opening.door-wide.door-nav {
+      pointer-events: auto;
+      cursor: pointer;
+    }
     .hover-chip {
       position: absolute; top: 10px; left: 10px; pointer-events: none;
       background: rgba(18,20,26,0.9); border: 1px solid var(--border);
@@ -132,6 +141,22 @@
       opacity: 0; pointer-events: none; transition: opacity 0.2s ease; white-space: nowrap; z-index: 3;
     }
     .toast.show { opacity: 1; }
+    .mode-toggle {
+      position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
+      z-index: 4; display: flex; gap: 0;
+      background: rgba(18,20,26,0.92); border: 1px solid var(--border-strong);
+      border-radius: 999px; padding: 3px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    }
+    .mode-btn {
+      border: 0; background: transparent; color: var(--muted);
+      font: 700 12px/1 "Segoe UI", sans-serif; letter-spacing: 0.02em;
+      padding: 8px 16px; border-radius: 999px; cursor: pointer;
+    }
+    .mode-btn:hover { color: var(--fg); }
+    .mode-btn.on {
+      background: #1c2740; color: #c5d8ff;
+      box-shadow: inset 0 0 0 1px var(--accent-dim);
+    }
     .sidebar {
       background: var(--surface); border-left: 1px solid var(--border);
       display: flex; flex-direction: column; min-height: 0; min-width: 0;
@@ -139,13 +164,6 @@
     .side-head { flex: 0 0 auto; padding: 12px 14px 8px; border-bottom: 1px solid var(--border); }
     .side-head h1 { margin: 0; font-size: 16px; font-weight: 700; }
     .side-head .lede { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
-    .walk { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 5px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
-    .chip {
-      border: 1px solid var(--border); background: var(--bg-elevated); color: inherit;
-      font: 650 10px/1 "Segoe UI", sans-serif; padding: 5px 7px; border-radius: 999px; cursor: pointer;
-    }
-    .chip:hover { border-color: var(--border-strong); }
-    .chip.on { border-color: var(--accent-dim); box-shadow: inset 0 0 0 1px var(--accent-dim); color: #c5d8ff; }
     .total {
       flex: 0 0 auto; display: flex; align-items: baseline; justify-content: space-between;
       gap: 10px; padding: 10px 14px; background: #121a28; border-bottom: 1px solid #2a4068;
@@ -204,18 +222,19 @@
     </div>
     <div class="main">
       <div class="viewport-wrap">
-        <div class="vision">Proposed UX / vision — not a live scan. Real iPhone RoomPlan is indoor, room-by-room (LiDAR ~5 m). It cannot measure a school from outside. Product stays inside: classrooms, library, lab, lobby, corridor, washrooms, staff, office, gym.</div>
         <div class="stage" id="stage"><div class="scene"><div class="model" id="model"></div></div></div>
         <div class="hover-chip" id="hover"></div>
         <div class="toast" id="toast"></div>
-        <div class="hint">Standing in the corridor · drag to look around · scroll to back out (ceilings lift past a threshold) · room chips put you inside · Whole school = roof-off plan</div>
+        <div class="mode-toggle" id="modeToggle" role="group" aria-label="Camera mode">
+          <button type="button" class="mode-btn on" data-mode="walk" id="modeWalk">Walk</button>
+          <button type="button" class="mode-btn" data-mode="roof-off" id="modeRoof">Roof-off</button>
+        </div>
       </div>
       <aside class="sidebar">
         <div class="side-head">
           <h1>SAMPLE SCHOOL — indoor walk</h1>
-          <p class="lede">11 interior rooms. Click a surface to include it in the m² total. Floors stay out. Sample dimensions — not a LiDAR capture.</p>
+          <p class="lede">11 interior rooms. Click a room to stand inside it. Click a surface to include it in the m² total. Floors stay out. Sample dimensions — not a LiDAR capture.</p>
         </div>
-        <div class="walk" id="walk"></div>
         <div class="total">
           <div>
             <div class="k">Indoor paintable</div>
@@ -262,49 +281,49 @@
     { id: "staff", name: "Staff room", x: 37, z: 6, w: 5, d: 5, h: 2.8, tint: "staff", note: "east of corridor" }
   ];
 
-  function op(kind, w, h, left, bottom, label) {
-    return { kind: kind, w: w, h: h, left: left, bottom: bottom, label: label };
+  function op(kind, w, h, left, bottom, label, to) {
+    return { kind: kind, w: w, h: h, left: left, bottom: bottom, label: label, to: to || null };
   }
-  const D = function (w, h, left, label) { return op("door", w, h, left, 0, label); };
-  const DW = function (w, h, left, label) { return op("door-wide", w, h, left, 0, label); };
-  const W = function (w, h, left, bottom, label) { return op("window", w, h, left, bottom, label); };
+  const D = function (w, h, left, label, to) { return op("door", w, h, left, 0, label, to); };
+  const DW = function (w, h, left, label, to) { return op("door-wide", w, h, left, 0, label, to); };
+  const W = function (w, h, left, bottom, label) { return op("window", w, h, left, bottom, label, null); };
 
   const openings = {
-    "lobby-s": [DW(1.8, 2.2, 3.1, "Entry doors 1.8 \u00d7 2.2")],
-    "lobby-n": [DW(1.6, 2.2, 3.2, "To corridor 1.6 \u00d7 2.2")],
-    "classA-n": [D(0.9, 2.1, 4.55, "Door 0.9 \u00d7 2.1")],
+    "lobby-s": [DW(1.8, 2.2, 3.1, "Entry doors 1.8 \u00d7 2.2", null)],
+    "lobby-n": [DW(1.6, 2.2, 3.2, "To corridor 1.6 \u00d7 2.2", "corridor")],
+    "classA-n": [D(0.9, 2.1, 4.55, "Door 0.9 \u00d7 2.1", "corridor")],
     "classA-s": [W(1.8, 1.2, 1.4, 1.0, "Window 1.8 \u00d7 1.2"), W(1.8, 1.2, 6.6, 1.0, "Window 1.8 \u00d7 1.2")],
     "classA-w": [W(1.4, 1.2, 2.2, 1.0, "Window 1.4 \u00d7 1.2")],
-    "classB-n": [D(0.9, 2.1, 3.55, "Door 0.9 \u00d7 2.1")],
+    "classB-n": [D(0.9, 2.1, 3.55, "Door 0.9 \u00d7 2.1", "corridor")],
     "classB-s": [W(1.6, 1.2, 1.2, 1.0, "Window 1.6 \u00d7 1.2"), W(1.6, 1.2, 5.0, 1.0, "Window 1.6 \u00d7 1.2")],
-    "office-n": [D(0.9, 2.1, 2.55, "Door 0.9 \u00d7 2.1")],
+    "office-n": [D(0.9, 2.1, 2.55, "Door 0.9 \u00d7 2.1", "corridor")],
     "office-s": [W(1.4, 1.1, 2.3, 1.0, "Window 1.4 \u00d7 1.1")],
-    "wash-n": [D(0.8, 2.1, 2.1, "Door 0.8 \u00d7 2.1")],
+    "wash-n": [D(0.8, 2.1, 2.1, "Door 0.8 \u00d7 2.1", "corridor")],
     "corridor-s": [
-      D(0.9, 2.1, 4.55, "Classroom A 0.9 \u00d7 2.1"),
-      DW(1.6, 2.2, 13.2, "Lobby 1.6 \u00d7 2.2"),
-      D(0.9, 2.1, 21.55, "Classroom B 0.9 \u00d7 2.1"),
-      D(0.9, 2.1, 28.55, "Office 0.9 \u00d7 2.1"),
-      D(0.8, 2.1, 33.6, "Washrooms 0.8 \u00d7 2.1")
+      D(0.9, 2.1, 4.55, "Classroom A 0.9 \u00d7 2.1", "classA"),
+      DW(1.6, 2.2, 13.2, "Lobby 1.6 \u00d7 2.2", "lobby"),
+      D(0.9, 2.1, 21.55, "Classroom B 0.9 \u00d7 2.1", "classB"),
+      D(0.9, 2.1, 28.55, "Office 0.9 \u00d7 2.1", "office"),
+      D(0.8, 2.1, 33.6, "Washrooms 0.8 \u00d7 2.1", "wash")
     ],
     "corridor-n": [
-      DW(1.8, 2.2, 5.1, "Gym 1.8 \u00d7 2.2"),
-      D(0.9, 2.1, 15.55, "Library 0.9 \u00d7 2.1"),
-      D(0.9, 2.1, 23.55, "Lab 0.9 \u00d7 2.1"),
-      D(0.9, 2.1, 31.55, "Classroom C 0.9 \u00d7 2.1")
+      DW(1.8, 2.2, 5.1, "Gym 1.8 \u00d7 2.2", "gym"),
+      D(0.9, 2.1, 15.55, "Library 0.9 \u00d7 2.1", "library"),
+      D(0.9, 2.1, 23.55, "Lab 0.9 \u00d7 2.1", "lab"),
+      D(0.9, 2.1, 31.55, "Classroom C 0.9 \u00d7 2.1", "classC")
     ],
-    "corridor-e": [D(0.9, 2.1, 1.05, "Staff 0.9 \u00d7 2.1")],
-    "gym-s": [DW(1.8, 2.2, 5.1, "To corridor 1.8 \u00d7 2.2")],
+    "corridor-e": [D(0.9, 2.1, 1.05, "Staff 0.9 \u00d7 2.1", "staff")],
+    "gym-s": [DW(1.8, 2.2, 5.1, "To corridor 1.8 \u00d7 2.2", "corridor")],
     "gym-n": [W(2.0, 1.4, 2.0, 3.6, "Clerestory 2.0 \u00d7 1.4"), W(2.0, 1.4, 8.0, 3.6, "Clerestory 2.0 \u00d7 1.4")],
     "gym-w": [W(1.6, 1.4, 2.4, 3.6, "Clerestory 1.6 \u00d7 1.4"), W(1.6, 1.4, 6.0, 3.6, "Clerestory 1.6 \u00d7 1.4")],
-    "library-s": [D(0.9, 2.1, 3.55, "Door 0.9 \u00d7 2.1")],
+    "library-s": [D(0.9, 2.1, 3.55, "Door 0.9 \u00d7 2.1", "corridor")],
     "library-n": [W(1.8, 1.3, 1.2, 1.0, "Window 1.8 \u00d7 1.3"), W(1.8, 1.3, 5.0, 1.0, "Window 1.8 \u00d7 1.3")],
-    "lab-s": [D(0.9, 2.1, 3.55, "Door 0.9 \u00d7 2.1")],
+    "lab-s": [D(0.9, 2.1, 3.55, "Door 0.9 \u00d7 2.1", "corridor")],
     "lab-n": [W(1.6, 1.2, 1.2, 1.0, "Window 1.6 \u00d7 1.2"), W(1.6, 1.2, 5.2, 1.0, "Window 1.6 \u00d7 1.2")],
-    "classC-s": [D(0.9, 2.1, 4.05, "Door 0.9 \u00d7 2.1")],
+    "classC-s": [D(0.9, 2.1, 4.05, "Door 0.9 \u00d7 2.1", "corridor")],
     "classC-n": [W(1.6, 1.2, 1.4, 1.0, "Window 1.6 \u00d7 1.2"), W(1.6, 1.2, 5.8, 1.0, "Window 1.6 \u00d7 1.2")],
     "classC-e": [W(1.4, 1.2, 2.2, 1.0, "Window 1.4 \u00d7 1.2")],
-    "staff-w": [D(0.9, 2.1, 2.05, "Door 0.9 \u00d7 2.1")],
+    "staff-w": [D(0.9, 2.1, 2.05, "Door 0.9 \u00d7 2.1", "corridor")],
     "staff-e": [W(1.2, 1.1, 1.9, 1.0, "Window 1.2 \u00d7 1.1")]
   };
 
@@ -356,6 +375,9 @@
   function roomSurfaces(id) {
     return surfaces.filter(function (s) { return s.roomId === id; });
   }
+  function roomById(id) {
+    return rooms.find(function (r) { return r.id === id; });
+  }
 
   const minX = Math.min.apply(null, rooms.map(function (r) { return r.x; }));
   const maxX = Math.max.apply(null, rooms.map(function (r) { return r.x + r.w; }));
@@ -363,12 +385,10 @@
   const maxZ = Math.max.apply(null, rooms.map(function (r) { return r.z + r.d; }));
   const OX = (minX + maxX) / 2;
   const OZ = (minZ + maxZ) / 2;
-  /* World scale: large enough that walls fill the frame at eye height.
-     Aerial view compensates with scale() so the plan still fits. */
   const PX = 90;
   const INSET = 0.05;
   const EYE_H = 1.6;
-  const PERSPECTIVE = 780;
+  const TWEEN_MS = 300;
 
   const model = document.getElementById("model");
   const stage = document.getElementById("stage");
@@ -376,12 +396,15 @@
   const totalEl = document.getElementById("total");
   const hoverEl = document.getElementById("hover");
   const toastEl = document.getElementById("toast");
-  const walkEl = document.getElementById("walk");
   const dimsEl = document.getElementById("dims");
+  const modeWalkBtn = document.getElementById("modeWalk");
+  const modeRoofBtn = document.getElementById("modeRoof");
   const faces = {};
-  let focusedId = null;
-  let openRoomId = "lobby";
+  let focusedId = "corridor";
+  let openRoomId = "corridor";
   let toastTimer = 0;
+  let tween = null;
+  let tweenRaf = 0;
 
   function showToast(msg) {
     toastEl.textContent = msg;
@@ -409,8 +432,6 @@
     return b;
   }
 
-  /* Walls: outward + inward faces so interiors read when the camera is inside,
-     and the building still reads when zoomed out. Same surface id = one toggle. */
   rooms.forEach(function (room) {
     const w = room.w - INSET * 2;
     const d = room.d - INSET * 2;
@@ -432,7 +453,6 @@
     wallPair(room.id + "-n", w, "rotateY(180deg) translateZ(" + (d / 2 * PX) + "px)");
     wallPair(room.id + "-e", d, "rotateY(90deg) translateZ(" + (w / 2 * PX) + "px)");
     wallPair(room.id + "-w", d, "rotateY(-90deg) translateZ(" + (w / 2 * PX) + "px)");
-    /* Ceiling paint faces the room (inward). Floor stays upward for plan view. */
     addFace(room.id + "-ceil", "ceiling", w, d,
       T("rotateX(90deg) translateZ(" + (h / 2 * PX - skin) + "px) rotateX(180deg)"));
     addFace(room.id + "-floor", "floor", w, d,
@@ -440,25 +460,153 @@
       "<span class=\"lbl\">FLOOR<br>never included</span>");
   });
 
+  /* Roof-off ground under the school — not a toy floating in a void */
+  (function addGroundPlane() {
+    const padM = 22;
+    const gW = (maxX - minX + padM * 2) * PX;
+    const gD = (maxZ - minZ + padM * 2) * PX;
+    const ground = document.createElement("div");
+    ground.className = "ground-plane";
+    ground.setAttribute("aria-hidden", "true");
+    ground.style.width = gW + "px";
+    ground.style.height = gD + "px";
+    /* Floor plane is y≈0; sit just under room floors */
+    ground.style.transform =
+      "translate(-50%, -50%) translate3d(0px, 4px, 0px) rotateX(-90deg)";
+    model.appendChild(ground);
+  })();
+
   Object.keys(openings).forEach(function (id) {
     (faces[id] || []).forEach(function (parent) {
       const mirror = parent.dataset.mirrorOpenings === "1";
       const wallW = parseFloat(parent.style.width) / PX;
       openings[id].forEach(function (o) {
         const node = document.createElement("div");
-        node.className = "opening " + o.kind;
+        node.className = "opening " + o.kind + (o.to ? " door-nav" : "");
         node.style.width = (o.w * PX) + "px";
         node.style.height = (o.h * PX) + "px";
         const left = mirror ? (wallW - o.left - o.w) : o.left;
         node.style.left = (left * PX) + "px";
         node.style.bottom = (o.bottom * PX) + "px";
+        if (o.to) node.dataset.to = o.to;
         parent.appendChild(node);
       });
     });
   });
 
+  /*
+   * Two named modes — not analog cam.pull.
+   * Walk: eye-height insidePose, isolation on, look-drag.
+   * Roof-off: CUT to planFitZoom, ceilings lifted, orbit/pan.
+   */
+  const cam = {
+    mode: "walk",
+    roomId: "corridor",
+    yawOff: 0,
+    pitchOff: 0,
+    eyeXOff: 0,
+    eyeZOff: 0,
+    panX: 0,
+    panY: 0,
+    orbitYaw: 26,
+    orbitPitch: 52,
+    dragging: false,
+    button: 0,
+    lx: 0,
+    ly: 0,
+    moved: false
+  };
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+  function smooth(t) {
+    t = clamp(t, 0, 1);
+    return t * t * (3 - 2 * t);
+  }
+  function worldX(m) { return (m - OX) * PX; }
+  function worldZ(m) { return (m - OZ) * PX; }
+
+  function insidePose(room, withEyeOff) {
+    const presets = {
+      corridor: { xM: 7.0, zM: 7.55, yaw: 90, pitch: -1 },
+      lobby: { xM: 11.2, zM: 1.25, yaw: 125, pitch: -8 },
+      classA: { xM: 2.5, zM: 1.3, yaw: 130, pitch: -8 },
+      classB: { xM: 19.5, zM: 1.3, yaw: 130, pitch: -8 },
+      office: { xM: 27.0, zM: 1.3, yaw: 130, pitch: -8 },
+      wash: { xM: 33.2, zM: 2.6, yaw: 125, pitch: -8 },
+      /* Mid-volume — not pressed against the west wall */
+      gym: { xM: 5.5, zM: 14.8, yaw: 55, pitch: -8 },
+      library: { xM: 13.3, zM: 14.6, yaw: -55, pitch: -8 },
+      lab: { xM: 21.3, zM: 13.6, yaw: -55, pitch: -8 },
+      classC: { xM: 29.6, zM: 12.8, yaw: -55, pitch: -8 },
+      staff: { xM: 40.5, zM: 7.2, yaw: -115, pitch: -8 }
+    };
+    const p = presets[room.id] || {
+      xM: room.x + room.w * 0.3,
+      zM: room.z + room.d * 0.22,
+      yaw: 125,
+      pitch: -8
+    };
+    const offX = withEyeOff === false ? 0 : cam.eyeXOff;
+    const offZ = withEyeOff === false ? 0 : cam.eyeZOff;
+    return {
+      x: worldX(p.xM) + offX,
+      y: -EYE_H * PX,
+      z: worldZ(p.zM) + offZ,
+      yaw: p.yaw,
+      pitch: p.pitch
+    };
+  }
+
+  /* zoomExtents-style: fit the plan, but never near-clip and never shrink to nothing */
+  function planFitZoom() {
+    const rect = stage.getBoundingClientRect();
+    const viewW = Math.max(rect.width, 320);
+    const viewH = Math.max(rect.height, 240);
+    const fitW = (maxX - minX) * PX * 1.18;
+    const fitH = (maxZ - minZ) * PX * 1.45;
+    const fit = Math.min(viewW / fitW, viewH / fitH) * 0.92;
+    const minZoom = Math.max(0.11, fit * 0.62);
+    const maxZoom = Math.min(0.30, fit * 1.08);
+    return clamp(fit, minZoom, maxZoom);
+  }
+
+  function clampRoofPan() {
+    const z = planFitZoom();
+    const span = Math.max(maxX - minX, maxZ - minZ) * PX * z * 0.6;
+    cam.panX = clamp(cam.panX, -span, span);
+    cam.panY = clamp(cam.panY, -span, span);
+  }
+
+  function roomLift(ceilId) {
+    const roomId = ceilId.replace(/-ceil$/, "");
+    const room = roomById(roomId);
+    return ((room && room.h) || 3) * PX * 0.9 + 60;
+  }
+
+  function syncCeilings() {
+    const open = cam.mode === "roof-off";
+    model.classList.toggle("ceilings-open", open);
+    Object.keys(faces).forEach(function (id) {
+      if (id.indexOf("-ceil") === -1) return;
+      faces[id].forEach(function (f) {
+        const base = f.dataset.baseTransform || f.style.transform;
+        if (open) {
+          f.style.transform = base + " translateY(" + (-roomLift(id)) + "px)";
+        } else {
+          f.style.transform = base;
+        }
+      });
+    });
+  }
+
+  function syncModeChrome() {
+    modeWalkBtn.classList.toggle("on", cam.mode === "walk");
+    modeRoofBtn.classList.toggle("on", cam.mode === "roof-off");
+  }
+
   function paintFaces() {
-    const isolate = cam.pull < CEILING_HIDE_PULL && !!focusedId;
+    const isolate = cam.mode === "walk" && !!focusedId;
     model.classList.toggle("isolate-room", isolate);
     surfaces.forEach(function (s) {
       (faces[s.id] || []).forEach(function (f) {
@@ -470,21 +618,156 @@
     });
   }
 
-  function render() {
-    walkEl.innerHTML = "";
-    rooms.forEach(function (room) {
-      const chip = el("button", "chip" + (focusedId === room.id ? " on" : ""));
-      chip.type = "button";
-      chip.textContent = room.name;
-      chip.addEventListener("click", function () { focusRoom(room.id); });
-      walkEl.appendChild(chip);
-    });
-    const allChip = el("button", "chip" + (focusedId === null ? " on" : ""));
-    allChip.type = "button";
-    allChip.textContent = "Whole school";
-    allChip.addEventListener("click", function () { focusRoom(null); });
-    walkEl.appendChild(allChip);
+  function currentWalkPose() {
+    const room = roomById(cam.roomId) || roomById("corridor");
+    const base = insidePose(room, true);
+    return {
+      x: base.x,
+      y: base.y,
+      z: base.z,
+      yaw: base.yaw + cam.yawOff,
+      pitch: clamp(base.pitch + cam.pitchOff, -25, 40)
+    };
+  }
 
+  function applyWalkTransform(pose) {
+    model.style.transform =
+      "rotateX(" + pose.pitch + "deg) rotateY(" + (-pose.yaw) + "deg) translate3d(" +
+      (-pose.x) + "px," + (-pose.y) + "px," + (-pose.z) + "px)";
+  }
+
+  function applyRoofTransform() {
+    clampRoofPan();
+    const zoom = planFitZoom();
+    const pitch = cam.orbitPitch;
+    const yaw = cam.orbitYaw;
+    /* Push scales with zoom so large PX geometry stays behind the near plane */
+    const push = clamp(240 + zoom * 280, 260, 360);
+    model.style.transform =
+      "translate(" + cam.panX + "px," + (24 + cam.panY * 0.02) + "px) rotateX(" +
+      pitch + "deg) rotateY(" + yaw + "deg) translateZ(" + (-push) + "px) scale(" + zoom + ")";
+  }
+
+  function applyCamera() {
+    if (cam.mode === "walk") {
+      if (tween) {
+        const t = smooth((performance.now() - tween.start) / tween.dur);
+        applyWalkTransform({
+          x: lerp(tween.from.x, tween.to.x, t),
+          y: lerp(tween.from.y, tween.to.y, t),
+          z: lerp(tween.from.z, tween.to.z, t),
+          yaw: lerp(tween.from.yaw, tween.to.yaw, t),
+          pitch: lerp(tween.from.pitch, tween.to.pitch, t)
+        });
+      } else {
+        applyWalkTransform(currentWalkPose());
+      }
+    } else {
+      applyRoofTransform();
+    }
+    syncCeilings();
+    paintFaces();
+    syncModeChrome();
+  }
+
+  function cancelTween() {
+    if (tweenRaf) cancelAnimationFrame(tweenRaf);
+    tweenRaf = 0;
+    tween = null;
+  }
+
+  function tickTween() {
+    if (!tween) return;
+    const raw = (performance.now() - tween.start) / tween.dur;
+    if (raw >= 1) {
+      cam.roomId = tween.toId;
+      cam.yawOff = 0;
+      cam.pitchOff = 0;
+      cam.eyeXOff = 0;
+      cam.eyeZOff = 0;
+      focusedId = tween.toId;
+      openRoomId = tween.toId;
+      tween = null;
+      tweenRaf = 0;
+      applyCamera();
+      render();
+      return;
+    }
+    applyCamera();
+    tweenRaf = requestAnimationFrame(tickTween);
+  }
+
+  function enterWalkRoom(id, opts) {
+    opts = opts || {};
+    const room = roomById(id);
+    if (!room) return;
+    const fromRoof = cam.mode === "roof-off";
+    const sameRoom = cam.mode === "walk" && cam.roomId === id && !tween;
+    cam.mode = "walk";
+
+    if (fromRoof || opts.cut || sameRoom) {
+      cancelTween();
+      cam.roomId = id;
+      cam.yawOff = 0;
+      cam.pitchOff = 0;
+      cam.eyeXOff = 0;
+      cam.eyeZOff = 0;
+      cam.panX = 0;
+      cam.panY = 0;
+      focusedId = id;
+      openRoomId = id;
+      applyCamera();
+      render();
+      return;
+    }
+
+    /* Stay in Walk: ~300ms tween to that room's insidePose */
+    const from = currentWalkPose();
+    cam.yawOff = 0;
+    cam.pitchOff = 0;
+    cam.eyeXOff = 0;
+    cam.eyeZOff = 0;
+    const toBase = insidePose(room, false);
+    const to = {
+      x: toBase.x,
+      y: toBase.y,
+      z: toBase.z,
+      yaw: toBase.yaw,
+      pitch: toBase.pitch
+    };
+    cancelTween();
+    focusedId = id;
+    openRoomId = id;
+    tween = { start: performance.now(), dur: TWEEN_MS, from: from, to: to, toId: id };
+    applyCamera();
+    render();
+    tweenRaf = requestAnimationFrame(tickTween);
+  }
+
+  function enterRoofOff() {
+    cancelTween();
+    cam.mode = "roof-off";
+    focusedId = null;
+    cam.panX = 0;
+    cam.panY = 0;
+    cam.orbitYaw = 26;
+    cam.orbitPitch = 52;
+    /* CUT — no interpolation through clip space */
+    applyCamera();
+    render();
+  }
+
+  function setMode(mode) {
+    if (mode === "roof-off") enterRoofOff();
+    else enterWalkRoom(cam.roomId || "corridor", { cut: true });
+  }
+
+  function focusRoom(id) {
+    if (!id) return;
+    enterWalkRoom(id);
+  }
+
+  function render() {
     listEl.innerHTML = "";
     rooms.forEach(function (room) {
       const rs = roomSurfaces(room.id);
@@ -499,7 +782,7 @@
       head.appendChild(el("span", "pill yes", "room"));
       head.appendChild(el("span", "m2", fmt(t)));
       head.addEventListener("click", function () {
-        openRoomId = openRoomId === room.id ? null : room.id;
+        openRoomId = room.id;
         focusRoom(room.id);
       });
       block.appendChild(head);
@@ -537,12 +820,17 @@
     totalEl.appendChild(el("span", null, "m\u00b2"));
     dimsEl.textContent = rooms.length + " indoor rooms \u00b7 walls + ceilings \u2212 openings \u00b7 floors out";
     paintFaces();
+    syncModeChrome();
   }
 
   function toggle(id) {
     const s = surfaces.find(function (x) { return x.id === id; });
     if (!s) return;
     if (!s.selectable) {
+      if (cam.mode === "roof-off" && s.kind === "floor") {
+        enterWalkRoom(s.roomId, { cut: true });
+        return;
+      }
       showToast("Floor never included");
       return;
     }
@@ -562,188 +850,18 @@
     hoverEl.innerHTML = "";
     hoverEl.appendChild(el("strong", null, s.label));
     var sub;
-    if (!s.selectable) sub = s.lockReason || "Not selectable";
-    else sub = (s.included ? "Included" : "Excluded") + " \u00b7 " + fmt(netOf(s)) + " m\u00b2 \u00b7 click to toggle";
+    if (cam.mode === "roof-off" && s.kind === "floor") {
+      sub = "Click to stand inside \u00b7 floor never included in m\u00b2";
+    } else if (!s.selectable) {
+      sub = s.lockReason || "Not selectable";
+    } else {
+      sub = (s.included ? "Included" : "Excluded") + " \u00b7 " + fmt(netOf(s)) + " m\u00b2 \u00b7 click to toggle";
+    }
     hoverEl.appendChild(el("div", "sub", sub));
   }
 
-  /*
-   * Camera-in-volume for inside; orbit+scale for roof-off plan.
-   * yaw 0 = look +Z (north); +yaw toward +X (east).
-   * CSS Y: negative is up. Floor ~ y=0; eye at -EYE_H*PX.
-   * pull 0 = standing inside; pull 1 = whole-school plan.
-   * CSS perspective breaks when depth > perspective px — keep facing
-   * walls within ~0.5–0.7×PERSPECTIVE, and scale the world for aerial.
-   */
-  const CEILING_HIDE_PULL = 0.36;
-  const cam = {
-    pull: 0,
-    roomId: "corridor",
-    yawOff: 0,
-    pitchOff: 0,
-    eyeXOff: 0,
-    eyeZOff: 0,
-    panX: 0,
-    panY: 0,
-    dragging: false,
-    button: 0,
-    lx: 0,
-    ly: 0,
-    moved: false
-  };
-
-  function lerp(a, b, t) { return a + (b - a) * t; }
-  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-  function smooth(t) {
-    t = clamp(t, 0, 1);
-    return t * t * (3 - 2 * t);
-  }
-  function lerpAngle(a, b, t) {
-    let d = ((b - a + 540) % 360) - 180;
-    return a + d * t;
-  }
-
-  function worldX(m) { return (m - OX) * PX; }
-  function worldZ(m) { return (m - OZ) * PX; }
-
-  /* Stand inside the room volume. yaw 0 = south (−Z), 90 = east (+X),
-     180 = north (+Z) — CSS perspective looks toward −Z by default.
-     Aim near a doorway at a slight angle so local walls/ceiling fill the frame. */
-  function insidePose(room) {
-    const presets = {
-      /* Looking east down the hall; door openings read on the flanks. */
-      corridor: { xM: 7.0, zM: 7.55, yaw: 90, pitch: -1 },
-      /* Corner-ish views so ceiling + doorway wall both read (CSS 3D). */
-      lobby: { xM: 11.2, zM: 1.25, yaw: 125, pitch: -8 },
-      classA: { xM: 2.5, zM: 1.3, yaw: 130, pitch: -8 },
-      classB: { xM: 19.5, zM: 1.3, yaw: 130, pitch: -8 },
-      office: { xM: 27.0, zM: 1.3, yaw: 130, pitch: -8 },
-      wash: { xM: 33.2, zM: 2.6, yaw: 125, pitch: -8 },
-      /* Tall gym: look across the volume; corridor doors sit on the right. */
-      gym: { xM: 1.8, zM: 13.0, yaw: 78, pitch: -6 },
-      library: { xM: 13.3, zM: 14.6, yaw: -55, pitch: -8 },
-      lab: { xM: 21.3, zM: 13.6, yaw: -55, pitch: -8 },
-      classC: { xM: 29.6, zM: 12.8, yaw: -55, pitch: -8 },
-      staff: { xM: 40.5, zM: 7.2, yaw: -115, pitch: -8 }
-    };
-    const p = presets[room.id] || {
-      xM: room.x + room.w * 0.3,
-      zM: room.z + room.d * 0.22,
-      yaw: 125,
-      pitch: -8
-    };
-    return {
-      x: worldX(p.xM) + cam.eyeXOff,
-      y: -EYE_H * PX,
-      z: worldZ(p.zM) + cam.eyeZOff,
-      yaw: p.yaw,
-      pitch: p.pitch
-    };
-  }
-
-  function planFitZoom() {
-    const rect = stage.getBoundingClientRect();
-    const viewW = Math.max(rect.width, 320);
-    const viewH = Math.max(rect.height, 240);
-    const fitW = (maxX - minX) * PX * 1.12;
-    const fitH = (maxZ - minZ) * PX * 1.35;
-    return clamp(Math.min(viewW / fitW, viewH / fitH) * 0.95, 0.08, 0.45);
-  }
-
-  function syncCeilings() {
-    const open = cam.pull >= CEILING_HIDE_PULL;
-    model.classList.toggle("ceilings-open", open);
-    Object.keys(faces).forEach(function (id) {
-      if (id.indexOf("-ceil") === -1) return;
-      faces[id].forEach(function (f) {
-        const base = f.dataset.baseTransform || f.style.transform;
-        if (open) {
-          f.style.transform = base + " translateY(" + (-roomLift(id)) + "px)";
-        } else {
-          f.style.transform = base;
-        }
-      });
-    });
-  }
-
-  function roomLift(ceilId) {
-    const roomId = ceilId.replace(/-ceil$/, "");
-    const room = rooms.find(function (r) { return r.id === roomId; });
-    return ((room && room.h) || 3) * PX * 0.9 + 60;
-  }
-
-  function applyCamera() {
-    cam.pull = clamp(cam.pull, 0, 1);
-    const room = rooms.find(function (r) { return r.id === cam.roomId; }) || rooms.find(function (r) { return r.id === "corridor"; });
-    const inside = insidePose(room);
-    const pull = cam.pull;
-
-    const dollyT = smooth(clamp(pull / 0.28, 0, 1));
-    const planT = smooth(clamp((pull - 0.16) / 0.84, 0, 1));
-
-    const yawLook = inside.yaw + cam.yawOff;
-    const pitchLook = clamp(inside.pitch + cam.pitchOff, -25, 40);
-    const rad = yawLook * Math.PI / 180;
-    /* Look dir (sin, −cos): yaw0=south/−Z, yaw90=east/+X. Dolly moves backward. */
-    const backX = -Math.sin(rad);
-    const backZ = Math.cos(rad);
-    const dollyDist = dollyT * Math.min(Math.max(room.w, room.d) * 0.28, 5) * PX;
-
-    const eyeX = inside.x + backX * dollyDist;
-    const eyeY = inside.y - dollyT * PX * 0.45;
-    const eyeZ = inside.z + backZ * dollyDist;
-
-    if (planT < 0.5) {
-      /* First-person / dolly: camera-in-volume. Mild rise as planT grows. */
-      const blend = planT / 0.5;
-      const pitch = lerp(pitchLook, 28, blend);
-      const y = lerp(eyeY, eyeY - 280, blend);
-      model.style.transform =
-        "rotateX(" + pitch + "deg) rotateY(" + (-yawLook) + "deg) translate3d(" +
-        (-eyeX) + "px," + (-y) + "px," + (-eyeZ) + "px)";
-    } else {
-      /* Roof-off plan: classic orbit+scale (stays inside the perspective frustum). */
-      const t = (planT - 0.5) / 0.5;
-      const zoomNear = planFitZoom() * 1.2;
-      const zoomFar = planFitZoom();
-      const zoom = lerp(zoomNear, zoomFar, t);
-      const pitch = lerp(36, 52, t);
-      const yaw = lerpAngle(yawLook, 26 + cam.yawOff * 0.2, t);
-      /* Push the model into the scene so large PX geometry does not clip the near plane. */
-      const push = lerp(120, 280, t);
-      model.style.transform =
-        "translate(" + cam.panX + "px," + (24 + cam.panY * 0.02) + "px) rotateX(" +
-        pitch + "deg) rotateY(" + yaw + "deg) translateZ(" + (-push) + "px) scale(" + zoom + ")";
-    }
-    syncCeilings();
-    paintFaces();
-
-    const nextFocus = cam.pull >= 0.88 ? null : cam.roomId;
-    if (nextFocus !== focusedId) {
-      focusedId = nextFocus;
-      render();
-    }
-  }
-
-  function focusRoom(id) {
-    if (id) {
-      cam.roomId = id;
-      cam.pull = 0;
-      cam.yawOff = 0;
-      cam.pitchOff = 0;
-      cam.eyeXOff = 0;
-      cam.eyeZOff = 0;
-      cam.panX = 0;
-      cam.panY = 0;
-      focusedId = id;
-      openRoomId = id;
-    } else {
-      cam.pull = 1;
-      focusedId = null;
-    }
-    applyCamera();
-    render();
-  }
+  modeWalkBtn.addEventListener("click", function () { setMode("walk"); });
+  modeRoofBtn.addEventListener("click", function () { setMode("roof-off"); });
 
   stage.addEventListener("pointerdown", function (ev) {
     cam.dragging = true;
@@ -754,39 +872,56 @@
     stage.setPointerCapture(ev.pointerId);
   });
   stage.addEventListener("pointermove", function (ev) {
-    if (!cam.dragging) return;
+    if (!cam.dragging || tween) return;
     const dx = ev.clientX - cam.lx;
     const dy = ev.clientY - cam.ly;
     if (Math.hypot(dx, dy) > 4) cam.moved = true;
     cam.lx = ev.clientX;
     cam.ly = ev.clientY;
-    if (cam.button === 2 || ev.shiftKey) {
-      if (cam.pull > 0.5) {
+    if (cam.mode === "roof-off") {
+      if (cam.button === 2 || ev.shiftKey) {
         cam.panX += dx * 2.2;
         cam.panY += dy * 2.2;
       } else {
-        const rad = (insidePose(rooms.find(function (r) { return r.id === cam.roomId; }) || rooms[0]).yaw + cam.yawOff) * Math.PI / 180;
-        /* Strafe on look-right axis (cos, sin) with yaw0=south */
-        cam.eyeXOff += (Math.cos(rad) * dx + Math.sin(rad) * dy) * 0.7;
-        cam.eyeZOff += (Math.sin(rad) * dx - Math.cos(rad) * dy) * 0.7;
+        cam.orbitYaw += dx * 0.22;
+        cam.orbitPitch = clamp(cam.orbitPitch - dy * 0.18, 28, 72);
       }
+    } else if (cam.button === 2 || ev.shiftKey) {
+      const rad = (insidePose(roomById(cam.roomId) || rooms[0], false).yaw + cam.yawOff) * Math.PI / 180;
+      cam.eyeXOff += (Math.cos(rad) * dx + Math.sin(rad) * dy) * 0.7;
+      cam.eyeZOff += (Math.sin(rad) * dx - Math.cos(rad) * dy) * 0.7;
     } else {
-      cam.yawOff += dx * (cam.pull > 0.5 ? 0.22 : 0.32);
+      cam.yawOff += dx * 0.32;
       cam.pitchOff = clamp(cam.pitchOff - dy * 0.26, -18, 32);
     }
     applyCamera();
   });
+
   function faceIdFromPoint(x, y) {
     const n = document.elementFromPoint(x, y);
     const face = n && n.closest ? n.closest(".face") : null;
     if (!face || !stage.contains(face)) return null;
     return face.dataset.id;
   }
+  function doorToFromPoint(x, y) {
+    const n = document.elementFromPoint(x, y);
+    const door = n && n.closest ? n.closest(".opening.door-nav") : null;
+    if (!door || !stage.contains(door)) return null;
+    return door.dataset.to || null;
+  }
+
   function endDrag(ev) {
     const wasDrag = cam.dragging;
     const moved = cam.moved;
     cam.dragging = false;
-    if (ev && ev.type === "pointerup" && wasDrag && !moved) {
+    if (ev && ev.type === "pointerup" && wasDrag && !moved && !tween) {
+      if (cam.mode === "walk") {
+        const to = doorToFromPoint(ev.clientX, ev.clientY);
+        if (to) {
+          enterWalkRoom(to);
+          return;
+        }
+      }
       const id = faceIdFromPoint(ev.clientX, ev.clientY);
       if (id) toggle(id);
     }
@@ -794,22 +929,15 @@
   stage.addEventListener("pointerup", endDrag);
   stage.addEventListener("pointercancel", endDrag);
   stage.addEventListener("contextmenu", function (ev) { ev.preventDefault(); });
+  /* Wheel disabled — modes are named clicks, not analog pull */
   stage.addEventListener("wheel", function (ev) {
     ev.preventDefault();
-    const dir = ev.deltaY > 0 ? 1 : -1;
-    const step = cam.pull < 0.32 ? 0.032 : 0.042;
-    cam.pull = clamp(cam.pull + dir * step, 0, 1);
-    if (cam.pull < 0.88 && !focusedId) {
-      focusedId = cam.roomId;
-      render();
-    }
-    applyCamera();
   }, { passive: false });
 
   focusedId = "corridor";
   openRoomId = "corridor";
   cam.roomId = "corridor";
-  cam.pull = 0;
+  cam.mode = "walk";
   applyCamera();
   render();
   window.addEventListener("resize", function () {
