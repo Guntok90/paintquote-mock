@@ -56,25 +56,32 @@
       pointer-events: none;
     }
     .stage {
-      width: 100%; height: 100%; perspective: 1400px; overflow: hidden;
-      touch-action: none; cursor: grab; user-select: none;
+      width: 100%; height: 100%; perspective: 560px; perspective-origin: 50% 46%;
+      overflow: hidden; touch-action: none; cursor: grab; user-select: none;
     }
     .stage:active { cursor: grabbing; }
-    .scene { width: 100%; height: 100%; display: grid; place-items: center; transform-style: preserve-3d; }
-    .model { position: relative; width: 0; height: 0; transform-style: preserve-3d; transform-origin: center center; }
+    .scene {
+      width: 100%; height: 100%; display: grid; place-items: center;
+      transform-style: preserve-3d;
+    }
+    .model {
+      position: relative; width: 0; height: 0;
+      transform-style: preserve-3d; transform-origin: 0 0;
+    }
     .face {
       position: absolute; left: 0; top: 0; margin: 0; padding: 0;
       border: 2px solid transparent;
       transform-style: preserve-3d; backface-visibility: hidden;
       font: 650 11px/1.2 "Segoe UI", sans-serif; color: #1a1d24;
-      cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+      cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);
+      opacity: 1;
     }
-    /* Zoom-out: hide ceilings so you can look into rooms from above */
+    /* Only after zoom-out threshold: hide ceilings so rooms read from above */
     .model.ceilings-open .face.ceiling {
-      opacity: 0;
+      opacity: 0 !important;
       pointer-events: none;
     }
-    .face.ceiling { transition: opacity 0.2s ease; }
+    .face.ceiling { transition: opacity 0.22s ease; }
     .face.wall { background: #e8eaed; }
     .face.tint-class { background: #efe6c8; }
     .face.tint-lobby { background: #e8dcc8; }
@@ -98,9 +105,10 @@
     .face.on { border-color: #5b8def; box-shadow: inset 0 0 0 2px rgba(91,141,239,0.4); }
     .face.off { background: #3a4050 !important; color: #9aa0ab; }
     .face.hover:not(.floor) { filter: brightness(1.08); }
-    .face.dim { opacity: 0.16; }
+    /* Dim only in roof-off plan view — never while standing inside */
+    .model.ceilings-open .face.dim { opacity: 0.22; }
     .face .lbl { pointer-events: none; padding: 6px; }
-    .opening { position: absolute; pointer-events: none; background: #1e293b; box-shadow: inset 0 0 0 2px #0f172a; }
+    .opening { position: absolute; pointer-events: none; background: #0b1220; box-shadow: inset 0 0 0 2px #020617; }
     .opening.window { background: #1a3358; }
     .opening.door-wide { background: #1e293b; }
     .hint { position: absolute; left: 12px; bottom: 10px; right: 12px; pointer-events: none; color: var(--muted); font-size: 11px; font-weight: 600; }
@@ -194,7 +202,7 @@
         <div class="stage" id="stage"><div class="scene"><div class="model" id="model"></div></div></div>
         <div class="hover-chip" id="hover"></div>
         <div class="toast" id="toast"></div>
-        <div class="hint">You start inside the corridor · drag to look · scroll out to lift ceilings and see the whole school · click walls/ceilings · chips jump you inside a room</div>
+        <div class="hint">Standing in the corridor · drag to look around · scroll to back out (ceilings lift past a threshold) · room chips put you inside · Whole school = roof-off plan</div>
       </div>
       <aside class="sidebar">
         <div class="side-head">
@@ -349,8 +357,10 @@
   const maxZ = Math.max.apply(null, rooms.map(function (r) { return r.z + r.d; }));
   const OX = (minX + maxX) / 2;
   const OZ = (minZ + maxZ) / 2;
-  const PX = 24;
-  const INSET = 0.06;
+  /* Large world scale so a ~3 m corridor fills the viewport at eye height. */
+  const PX = 100;
+  const INSET = 0.05;
+  const EYE_H = 1.55;
 
   const model = document.getElementById("model");
   const stage = document.getElementById("stage");
@@ -546,13 +556,22 @@
     hoverEl.appendChild(el("div", "sub", sub));
   }
 
-  const CEILING_HIDE_ZOOM = 0.92;
-  const orbit = {
-    yaw: -78,
-    pitch: 6,
-    zoom: 1.75,
+  /*
+   * True camera-in-volume (not orbit+scale on a tiny dollhouse).
+   * yaw 0 = look +Z (north); +yaw turns toward +X (east).
+   * CSS Y: negative is up. Floor sits near y=0; eye at -EYE_H*PX.
+   * pull 0 = standing inside; pull 1 = roof-off plan of whole school.
+   */
+  const CEILING_HIDE_PULL = 0.38;
+  const cam = {
+    pull: 0,
+    roomId: "corridor",
+    yawOff: 0,
+    pitchOff: 0,
+    eyeXOff: 0,
+    eyeZOff: 0,
     panX: 0,
-    panY: 0,
+    panZ: 0,
     dragging: false,
     button: 0,
     lx: 0,
@@ -560,61 +579,103 @@
     moved: false
   };
 
-  function roomCenterPx(room) {
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+  function smooth(t) {
+    t = clamp(t, 0, 1);
+    return t * t * (3 - 2 * t);
+  }
+  function lerpAngle(a, b, t) {
+    let d = ((b - a + 540) % 360) - 180;
+    return a + d * t;
+  }
+
+  function worldX(m) { return (m - OX) * PX; }
+  function worldZ(m) { return (m - OZ) * PX; }
+
+  /* Eye-height pose inside a room, facing a doorway/opening — not a toy-box exterior frame. */
+  function insidePose(room) {
+    const presets = {
+      corridor: { xM: 9.0, zM: 7.5, yaw: 90, pitch: 4 },
+      lobby: { xM: 14.0, zM: 3.2, yaw: 0, pitch: 6 },
+      classA: { xM: 5.0, zM: 3.2, yaw: 0, pitch: 6 },
+      classB: { xM: 22.0, zM: 3.2, yaw: 0, pitch: 6 },
+      office: { xM: 29.0, zM: 3.2, yaw: 0, pitch: 6 },
+      wash: { xM: 34.5, zM: 4.2, yaw: 0, pitch: 6 },
+      gym: { xM: 6.0, zM: 12.5, yaw: 180, pitch: 8 },
+      library: { xM: 16.0, zM: 12.0, yaw: 180, pitch: 6 },
+      lab: { xM: 24.0, zM: 11.5, yaw: 180, pitch: 6 },
+      classC: { xM: 32.5, zM: 11.0, yaw: 180, pitch: 6 },
+      staff: { xM: 39.0, zM: 8.5, yaw: -90, pitch: 6 }
+    };
+    const p = presets[room.id] || {
+      xM: room.x + room.w / 2,
+      zM: room.z + room.d / 2,
+      yaw: 20,
+      pitch: 8
+    };
     return {
-      x: (room.x + room.w / 2 - OX) * PX,
-      y: -(room.h / 2) * PX,
-      z: (room.z + room.d / 2 - OZ) * PX
+      x: worldX(p.xM) + cam.eyeXOff,
+      y: -EYE_H * PX,
+      z: worldZ(p.zM) + cam.eyeZOff,
+      yaw: p.yaw,
+      pitch: p.pitch
     };
   }
 
-  /* Prefer looking toward a doorway so the room does not feel like a sealed box. */
-  function lookYawForRoom(room) {
-    const prefs = {
-      corridor: -78,
-      lobby: 8,
-      gym: 175,
-      library: 175,
-      lab: 175,
-      classA: 8,
-      classB: 8,
-      classC: 175,
-      office: 8,
-      wash: 8,
-      staff: -90
+  function aerialPose() {
+    const rect = stage.getBoundingClientRect();
+    const spanX = (maxX - minX) * PX;
+    const spanZ = (maxZ - minZ) * PX;
+    const viewW = Math.max(rect.width, 320);
+    const viewH = Math.max(rect.height, 240);
+    /* Height so the plan roughly fits; pitch looks down onto the school. */
+    const fit = Math.max(spanX / viewW, spanZ / viewH);
+    const height = Math.max(1400, fit * 900);
+    return {
+      x: 0 + cam.panX,
+      y: -height,
+      z: spanZ * 0.08 + cam.panZ,
+      yaw: 28,
+      pitch: 62
     };
-    return prefs[room.id] != null ? prefs[room.id] : 20;
   }
 
-  function placeInsideRoom(room, opts) {
-    opts = opts || {};
-    const c = roomCenterPx(room);
-    const z = opts.zoom != null ? opts.zoom : (room.id === "corridor" ? 1.7 : room.id === "gym" ? 1.15 : 1.85);
-    orbit.yaw = opts.yaw != null ? opts.yaw : lookYawForRoom(room);
-    orbit.pitch = opts.pitch != null ? opts.pitch : (room.id === "corridor" ? 6 : 10);
-    orbit.zoom = z;
-    /* Pan so the room center sits near the viewport after scale (yaw≈0 approx; good enough for mock). */
-    const yawR = orbit.yaw * Math.PI / 180;
-    const pitchR = orbit.pitch * Math.PI / 180;
-    const sx = c.x * z;
-    const sy = c.y * z;
-    const sz = c.z * z;
-    const x1 = sx * Math.cos(yawR) + sz * Math.sin(yawR);
-    const z1 = -sx * Math.sin(yawR) + sz * Math.cos(yawR);
-    const y2 = sy * Math.cos(pitchR) - z1 * Math.sin(pitchR);
-    orbit.panX = -x1;
-    orbit.panY = -y2 + (opts.eyeLift != null ? opts.eyeLift : 18);
+  function currentPose() {
+    const room = rooms.find(function (r) { return r.id === cam.roomId; }) || rooms.find(function (r) { return r.id === "corridor"; });
+    const inside = insidePose(room);
+    const aerial = aerialPose();
+    const pull = clamp(cam.pull, 0, 1);
+
+    /* 0–0.32: dolly backward through the room at eye height; then rise into plan. */
+    const dollyT = smooth(clamp(pull / 0.32, 0, 1));
+    const riseT = smooth(clamp((pull - 0.22) / 0.78, 0, 1));
+
+    const yawLook = inside.yaw + cam.yawOff;
+    const rad = yawLook * Math.PI / 180;
+    const backX = -Math.sin(rad);
+    const backZ = -Math.cos(rad);
+    const dollyDist = dollyT * Math.min(room.w, room.d, 8) * 0.55 * PX;
+
+    const x = lerp(inside.x + backX * dollyDist, aerial.x, riseT);
+    const y = lerp(inside.y - dollyT * 20, aerial.y, riseT * riseT);
+    const z = lerp(inside.z + backZ * dollyDist, aerial.z, riseT);
+    const yaw = lerpAngle(yawLook, aerial.yaw, riseT);
+    const pitch = lerp(inside.pitch + cam.pitchOff, aerial.pitch, riseT);
+
+    return { x: x, y: y, z: z, yaw: yaw, pitch: clamp(pitch, -12, 85) };
   }
 
   function syncCeilings() {
-    const open = orbit.zoom < CEILING_HIDE_ZOOM;
+    const open = cam.pull >= CEILING_HIDE_PULL;
     model.classList.toggle("ceilings-open", open);
     Object.keys(faces).forEach(function (id) {
       if (id.indexOf("-ceil") === -1) return;
       faces[id].forEach(function (f) {
         const base = f.dataset.baseTransform || f.style.transform;
         if (open) {
-          f.style.transform = base + " translateY(-140px)";
+          /* Lift roof panels away so the plan reads clearly */
+          f.style.transform = base + " translateY(" + (-roomLift(id)) + "px)";
         } else {
           f.style.transform = base;
         }
@@ -622,64 +683,85 @@
     });
   }
 
-  function applyOrbit() {
-    orbit.pitch = Math.max(-25, Math.min(82, orbit.pitch));
-    orbit.zoom = Math.max(0.2, Math.min(2.8, orbit.zoom));
+  function roomLift(ceilId) {
+    const roomId = ceilId.replace(/-ceil$/, "");
+    const room = rooms.find(function (r) { return r.id === roomId; });
+    return ((room && room.h) || 3) * PX * 0.85 + 80;
+  }
+
+  function applyCamera() {
+    cam.pull = clamp(cam.pull, 0, 1);
+    const p = currentPose();
+    /*
+     * Inverse camera on the world: translate world by -eye, then yaw, then pitch.
+     * CSS applies right-to-left, so write pitch * yaw * translate.
+     */
     model.style.transform =
-      "translate(" + orbit.panX + "px," + orbit.panY + "px) rotateX(" + orbit.pitch + "deg) rotateY(" + orbit.yaw + "deg) scale(" + orbit.zoom + ")";
+      "rotateX(" + p.pitch + "deg) rotateY(" + (-p.yaw) + "deg) translate3d(" +
+      (-p.x) + "px," + (-p.y) + "px," + (-p.z) + "px)";
     syncCeilings();
+
+    const nextFocus = cam.pull >= 0.9 ? null : cam.roomId;
+    if (nextFocus !== focusedId) {
+      focusedId = nextFocus;
+      render();
+    }
   }
 
   function focusRoom(id) {
-    focusedId = id;
-    if (id) openRoomId = id;
-    const room = rooms.find(function (r) { return r.id === id; });
-    if (room) {
-      placeInsideRoom(room);
+    if (id) {
+      cam.roomId = id;
+      cam.pull = 0;
+      cam.yawOff = 0;
+      cam.pitchOff = 0;
+      cam.eyeXOff = 0;
+      cam.eyeZOff = 0;
+      cam.panX = 0;
+      cam.panZ = 0;
+      focusedId = id;
+      openRoomId = id;
     } else {
-      orbit.panX = 0;
-      orbit.panY = 28;
-      orbit.pitch = 54;
-      orbit.yaw = 28;
-      fitZoom();
+      cam.pull = 1;
+      focusedId = null;
     }
-    applyOrbit();
+    applyCamera();
     render();
   }
 
-  function fitZoom() {
-    const rect = stage.getBoundingClientRect();
-    if (rect.width < 40 || rect.height < 40) return;
-    const fitW = (maxX - minX) * PX * 1.15;
-    const fitH = (maxZ - minZ) * PX * 1.35;
-    const s = Math.min(rect.width / fitW, rect.height / fitH);
-    if (focusedId === null) orbit.zoom = Math.max(0.22, Math.min(0.85, s * 0.82));
-    applyOrbit();
-  }
-
   stage.addEventListener("pointerdown", function (ev) {
-    orbit.dragging = true;
-    orbit.button = ev.button;
-    orbit.lx = ev.clientX;
-    orbit.ly = ev.clientY;
-    orbit.moved = false;
+    cam.dragging = true;
+    cam.button = ev.button;
+    cam.lx = ev.clientX;
+    cam.ly = ev.clientY;
+    cam.moved = false;
     stage.setPointerCapture(ev.pointerId);
   });
   stage.addEventListener("pointermove", function (ev) {
-    if (!orbit.dragging) return;
-    const dx = ev.clientX - orbit.lx;
-    const dy = ev.clientY - orbit.ly;
-    if (Math.hypot(dx, dy) > 4) orbit.moved = true;
-    orbit.lx = ev.clientX;
-    orbit.ly = ev.clientY;
-    if (orbit.button === 2 || ev.shiftKey) {
-      orbit.panX += dx;
-      orbit.panY += dy;
+    if (!cam.dragging) return;
+    const dx = ev.clientX - cam.lx;
+    const dy = ev.clientY - cam.ly;
+    if (Math.hypot(dx, dy) > 4) cam.moved = true;
+    cam.lx = ev.clientX;
+    cam.ly = ev.clientY;
+    if (cam.button === 2 || ev.shiftKey) {
+      if (cam.pull > 0.5) {
+        cam.panX += dx * (1 + cam.pull * 2);
+        cam.panZ += dy * (1 + cam.pull * 2);
+      } else {
+        const pose = currentPose();
+        const rad = pose.yaw * Math.PI / 180;
+        /* Strafe relative to look direction while inside */
+        cam.eyeXOff += (Math.cos(rad) * dx + Math.sin(rad) * dy) * 0.85;
+        cam.eyeZOff += (-Math.sin(rad) * dx + Math.cos(rad) * dy) * 0.85;
+      }
+    } else if (cam.pull < 0.55) {
+      cam.yawOff += dx * 0.35;
+      cam.pitchOff = clamp(cam.pitchOff - dy * 0.28, -20, 35);
     } else {
-      orbit.yaw += dx * 0.4;
-      orbit.pitch -= dy * 0.4;
+      cam.yawOff += dx * 0.25;
+      cam.pitchOff = clamp(cam.pitchOff - dy * 0.2, -15, 25);
     }
-    applyOrbit();
+    applyCamera();
   });
   function faceIdFromPoint(x, y) {
     const n = document.elementFromPoint(x, y);
@@ -688,9 +770,9 @@
     return face.dataset.id;
   }
   function endDrag(ev) {
-    const wasDrag = orbit.dragging;
-    const moved = orbit.moved;
-    orbit.dragging = false;
+    const wasDrag = cam.dragging;
+    const moved = cam.moved;
+    cam.dragging = false;
     if (ev && ev.type === "pointerup" && wasDrag && !moved) {
       const id = faceIdFromPoint(ev.clientX, ev.clientY);
       if (id) toggle(id);
@@ -701,17 +783,25 @@
   stage.addEventListener("contextmenu", function (ev) { ev.preventDefault(); });
   stage.addEventListener("wheel", function (ev) {
     ev.preventDefault();
-    orbit.zoom *= ev.deltaY > 0 ? 0.94 : 1.06;
-    applyOrbit();
+    const dir = ev.deltaY > 0 ? 1 : -1;
+    /* Scroll out = back up / rise; scroll in = return inside */
+    const step = cam.pull < 0.35 ? 0.035 : 0.045;
+    cam.pull = clamp(cam.pull + dir * step, 0, 1);
+    if (cam.pull < 0.9 && !focusedId) {
+      focusedId = cam.roomId;
+      render();
+    }
+    applyCamera();
   }, { passive: false });
 
   focusedId = "corridor";
   openRoomId = "corridor";
-  placeInsideRoom(rooms.find(function (r) { return r.id === "corridor"; }));
-  applyOrbit();
+  cam.roomId = "corridor";
+  cam.pull = 0;
+  applyCamera();
   render();
   window.addEventListener("resize", function () {
-    if (focusedId === null) fitZoom();
+    applyCamera();
   });
 })();
   </script>
